@@ -40,7 +40,8 @@ const AuctionPage = () => {
     number_of_owner: '',
     base_price: '',
     max_budget: '',
-    max_players: ''
+    max_players: '',
+    registration_type: 'private'
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -90,6 +91,7 @@ const AuctionPage = () => {
       base_price: auction.base_price || '',
       max_budget: auction.max_budget || '',
       max_players: auction.max_players || '',
+      registration_type: auction.registration_type || 'private',
       logo: null, // Don't reload file objects
       qr_code: null
     });
@@ -140,6 +142,7 @@ const AuctionPage = () => {
         auction_date: formData.auction_date || null,
         venue: formData.venue || null,
         status: formData.status,
+        registration_type: formData.registration_type || 'private',
         per_player_fees: formData.per_player_fees ? parseFloat(formData.per_player_fees) : null,
         number_of_teams: formData.number_of_teams ? parseInt(formData.number_of_teams, 10) : null,
         number_of_icon: formData.number_of_icon ? parseInt(formData.number_of_icon, 10) : null,
@@ -265,6 +268,13 @@ const AuctionPage = () => {
                 </select>
               </div>
               <div className="form-group">
+                <label className="form-label">Registration Access *</label>
+                <select required name="registration_type" value={formData.registration_type} onChange={handleChange} className="form-select">
+                  <option value="private">Private (Invitation Link Required)</option>
+                  <option value="public">Public (Open Link for Anyone)</option>
+                </select>
+              </div>
+              <div className="form-group">
                 <label className="form-label">Auction Logo {editingAuction?.auction_logo && '(Uploaded)'}</label>
                 <input type="file" name="logo" accept="image/*" onChange={handleChange} className="form-input" ref={fileInputRef} />
               </div>
@@ -300,61 +310,91 @@ const AuctionPage = () => {
                       <th style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)' }}>Teams Details</th>
                       <th style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)' }}>Budget Info</th>
                       <th style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)' }}>Fee</th>
+                      <th style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)' }}>Reg Mode</th>
                       <th style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)' }}>Status</th>
                       <th style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)' }}>QR</th>
                       <th style={{ padding: '1rem', borderBottom: '1px solid var(--glass-border)', textAlign: 'center' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {auctionsList.map(a => (
-                      <tr key={a.id} style={{ borderBottom: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)' }}>
-                        <td style={{ padding: '1rem' }}>
-                          {a.auction_logo ? (
-                            <img src={a.auction_logo} alt="Logo" style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: '4px', background: 'rgba(255,255,255,0.1)' }} />
-                          ) : (
-                            <div style={{ width: 40, height: 40, borderRadius: '4px', background: 'var(--accent-gold)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                              {getAuctionInitials(a.auction_name)}
-                            </div>
-                          )}
-                        </td>
-                        <td style={{ padding: '1rem' }}>
-                          <div style={{ fontWeight: 'bold' }}>{a.auction_name}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Code: {a.auction_code}</div>
-                        </td>
-                        <td style={{ padding: '1rem' }}>
-                          <div>{a.venue || '-'}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{a.auction_date || '-'}</div>
-                        </td>
-                        <td style={{ padding: '1rem' }}>
-                          <div>Teams: <span style={{ fontWeight: 'bold' }}>{a.number_of_teams || 0}</span></div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Icons/Team: {a.number_of_icon || 0} | Owners/Team: {a.number_of_owner || 0}</div>
-                        </td>
-                        <td style={{ padding: '1rem' }}>
-                          <div>Budget: <span style={{ fontWeight: 'bold' }}>{a.max_budget ? `₹${a.max_budget}` : '-'}</span></div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Max Players: {a.max_players || 11} | Base Price: {a.base_price ? `₹${a.base_price}` : '-'}</div>
-                        </td>
-                        <td style={{ padding: '1rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>
-                          {a.per_player_fees ? `₹${a.per_player_fees}` : '-'}
-                        </td>
-                        <td style={{ padding: '1rem' }}>
-                          <span style={{ 
-                            padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase',
-                            background: a.status === 'running' ? 'rgba(57, 255, 20, 0.2)' : a.status === 'registration_open' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255,255,255,0.1)',
-                            color: a.status === 'running' ? 'var(--accent-green)' : a.status === 'registration_open' ? '#38bdf8' : 'var(--text-muted)'
-                          }}>
-                            {a.status.replace('_', ' ')}
-                          </span>
-                        </td>
-                        <td style={{ padding: '1rem' }}>
-                          {a.qr_code_url ? <span style={{ color: 'var(--accent-green)', fontSize: '1.2rem' }}>✓</span> : <span style={{ color: 'var(--text-muted)' }}>-</span>}
-                        </td>
-                        <td style={{ padding: '1rem', textAlign: 'center' }}>
-                          <button onClick={() => handleEditClick(a)} className="btn btn-outline" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>
-                            Edit
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {auctionsList.map(a => {
+                      const isPublic = a.registration_type === 'public';
+                      const publicRegUrl = `${window.location.origin}${window.location.pathname}#/register?code=${a.auction_code}`;
+                      return (
+                        <tr key={a.id} style={{ borderBottom: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)' }}>
+                          <td style={{ padding: '1rem' }}>
+                            {a.auction_logo ? (
+                              <img src={a.auction_logo} alt="Logo" style={{ width: 40, height: 40, objectFit: 'contain', borderRadius: '4px', background: 'rgba(255,255,255,0.1)' }} />
+                            ) : (
+                              <div style={{ width: 40, height: 40, borderRadius: '4px', background: 'var(--accent-gold)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                                {getAuctionInitials(a.auction_name)}
+                              </div>
+                            )}
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <div style={{ fontWeight: 'bold' }}>{a.auction_name}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Code: {a.auction_code}</div>
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <div>{a.venue || '-'}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{a.auction_date || '-'}</div>
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <div>Teams: <span style={{ fontWeight: 'bold' }}>{a.number_of_teams || 0}</span></div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Icons/Team: {a.number_of_icon || 0} | Owners/Team: {a.number_of_owner || 0}</div>
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <div>Budget: <span style={{ fontWeight: 'bold' }}>{a.max_budget ? `₹${a.max_budget}` : '-'}</span></div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Max Players: {a.max_players || 11} | Base Price: {a.base_price ? `₹${a.base_price}` : '-'}</div>
+                          </td>
+                          <td style={{ padding: '1rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>
+                            {a.per_player_fees ? `₹${a.per_player_fees}` : '-'}
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <span style={{
+                              padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase',
+                              background: isPublic ? 'rgba(57, 255, 20, 0.15)' : 'rgba(255, 193, 7, 0.15)',
+                              color: isPublic ? 'var(--accent-green)' : '#ffc107',
+                              border: `1px solid ${isPublic ? 'var(--accent-green)' : '#ffc107'}`
+                            }}>
+                              {isPublic ? '🌐 Public' : '🔒 Private'}
+                            </span>
+                            {isPublic && (
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(publicRegUrl);
+                                  alert(`Public registration link copied to clipboard!\n\n${publicRegUrl}`);
+                                }}
+                                style={{
+                                  marginTop: '6px', display: 'block', fontSize: '0.7rem', background: 'none', border: '1px solid var(--border-color)',
+                                  color: 'var(--text-muted)', cursor: 'pointer', padding: '2px 6px', borderRadius: '4px'
+                                }}
+                              >
+                                📋 Copy Link
+                              </button>
+                            )}
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <span style={{ 
+                              padding: '0.2rem 0.6rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase',
+                              background: a.status === 'running' ? 'rgba(57, 255, 20, 0.2)' : a.status === 'registration_open' ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255,255,255,0.1)',
+                              color: a.status === 'running' ? 'var(--accent-green)' : a.status === 'registration_open' ? '#38bdf8' : 'var(--text-muted)'
+                            }}>
+                              {a.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            {a.qr_code_url ? <span style={{ color: 'var(--accent-green)', fontSize: '1.2rem' }}>✓</span> : <span style={{ color: 'var(--text-muted)' }}>-</span>}
+                          </td>
+                          <td style={{ padding: '1rem', textAlign: 'center' }}>
+                            <button onClick={() => handleEditClick(a)} className="btn btn-outline" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}>
+                              Edit
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}

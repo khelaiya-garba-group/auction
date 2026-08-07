@@ -218,18 +218,60 @@ const AdminInvitationsPage = () => {
         {/* Navigation & Scope Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h2 style={{ color: 'var(--text-main)', margin: 0 }}>Active Tournament: {activeAuction ? activeAuction.auction_name : 'None'}</h2>
+            <h2 style={{ color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+              Active Tournament: {activeAuction ? activeAuction.auction_name : 'None'}
+              {activeAuction && (
+                <span style={{
+                  padding: '0.2rem 0.8rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase',
+                  background: activeAuction.registration_type === 'public' ? 'rgba(57, 255, 20, 0.15)' : 'rgba(255, 193, 7, 0.15)',
+                  color: activeAuction.registration_type === 'public' ? 'var(--accent-green)' : '#ffc107',
+                  border: `1px solid ${activeAuction.registration_type === 'public' ? 'var(--accent-green)' : '#ffc107'}`
+                }}>
+                  {activeAuction.registration_type === 'public' ? '🌐 Public Mode' : '🔒 Private Mode'}
+                </span>
+              )}
+            </h2>
           </div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <Link to="/admin" className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>← Back to Admin</Link>
           </div>
         </div>
 
+        {activeAuction?.registration_type === 'public' && (
+          <div className="glass-panel" style={{ padding: '1.5rem', marginBottom: '2rem', border: '1px solid var(--accent-green)', background: 'rgba(57, 255, 20, 0.05)' }}>
+            <h3 style={{ color: 'var(--accent-green)', margin: '0 0 0.5rem 0', fontSize: '1.1rem' }}>🌐 Public Registration Enabled</h3>
+            <p style={{ color: 'var(--text-muted)', margin: '0 0 1rem 0', fontSize: '0.88rem' }}>
+              Anyone with the direct link can register without needing a single-use invite token.
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <input 
+                type="text" 
+                readOnly 
+                value={`${window.location.origin}${window.location.pathname}#/register?code=${activeAuction.auction_code}`} 
+                className="form-input" 
+                style={{ flex: 1, minWidth: '250px', fontSize: '0.85rem' }} 
+              />
+              <button 
+                type="button" 
+                onClick={() => {
+                  const url = `${window.location.origin}${window.location.pathname}#/register?code=${activeAuction.auction_code}`;
+                  navigator.clipboard.writeText(url);
+                  alert(`Public registration link copied!\n\n${url}`);
+                }}
+                className="btn btn-primary"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+              >
+                📋 Copy Public Link
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Form Panel */}
         <div className="glass-panel" style={{ padding: '2rem', width: '100%', marginBottom: '3rem', border: '1px solid rgba(57,255,20,0.2)' }}>
           <h3 style={{ color: 'var(--accent-green)', margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>✉️ Generate New Secure Invite Link</h3>
           <p style={{ color: 'var(--text-muted)', margin: '0 0 2rem 0', fontSize: '0.9rem' }}>
-            Create secure, single-use invite tokens linked to player mobile numbers. Standard registration is blocked unless a valid invite token is used.
+            Create secure, single-use invite tokens linked to player mobile numbers. Standard registration is blocked unless a valid invite token is used or Public Registration is enabled in Auction Settings.
           </p>
 
           <form onSubmit={handleGenerateInvite} style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)', padding: '1.5rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>

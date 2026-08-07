@@ -29,65 +29,96 @@ const RegistrationPage = () => {
     photo: null, aadhar: null
   });
 
-  const fetchAuctionByCode = async (code) => {
-    try {
-      setLoading(true);
-      setFormError('');
-      setCodeError('');
-      setRegistrationClosed(false);
-      const { data, error } = await supabase
-        .from('auctions')
-        .select('id, auction_name, qr_code_url, per_player_fees, status, auction_code, auction_logo')
-        .eq('auction_code', code)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (!data) {
-        throw new Error("No auction found with code: " + code);
-      }
-
-      if (data.status === 'running' || data.status === 'completed') {
-        setRegistrationClosed(true);
-        setActiveAuction(data);
-      } else if (data.status === 'registration_open') {
-        setActiveAuction(data);
-      } else {
-        throw new Error("Registration is not open for this auction.");
-      }
-    } catch (err) {
-      console.error("Error fetching auction by code:", err);
-      setCodeError(err.message || "Invalid auction code.");
-      setActiveAuction(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [publicAuctionsList, setPublicAuctionsList] = useState([]);
 
   useEffect(() => {
-    const inviteId = searchParams.get('invite');
-    if (!inviteId) {
-      setInvalidLink(true);
-      setLinkExpired(false);
-      if (auctionCodeParam) {
-        fetchAuctionByCode(auctionCodeParam);
-      } else {
-        setActiveAuction(null);
-        setLoading(false);
-      }
-      return;
-    } else {
+    const initializeRegistration = async () => {
+      setLoading(true);
       setInvalidLink(false);
       setLinkExpired(false);
-    }
-
-    if (auctionCodeParam) {
-      fetchAuctionByCode(auctionCodeParam);
-    } else {
+      setAlreadyRegistered(false);
+      setRegistrationClosed(false);
+      setCodeError('');
       setActiveAuction(null);
-      setLoading(false);
-    }
-  }, [auctionCodeParam, searchParams]);
+      setPublicAuctionsList([]);
+
+      const inviteId = searchParams.get('invite');
+
+      if (auctionCodeParam) {
+        // Specific auction code provided
+        try {
+          const { data, error } = await supabase
+            .from('auctions')
+            .select('id, auction_name, qr_code_url, per_player_fees, status, auction_code, auction_logo, registration_type')
+            .eq('auction_code', auctionCodeParam)
+            .maybeSingle();
+
+          if (error) throw error;
+          if (!data) {
+            throw new Error("No auction found with code: " + auctionCodeParam);
+          }
+
+          if (data.status === 'running' || data.status === 'completed') {
+            setRegistrationClosed(true);
+            setActiveAuction(data);
+          } else if (data.status === 'registration_open') {
+            setActiveAuction(data);
+            if (data.registration_type === 'private' && !inviteId) {
+              setInvalidLink(true);
+            }
+          } else {
+            throw new Error("Registration is not open for this auction.");
+          }
+        } catch (err) {
+          console.error("Error fetching auction by code:", err);
+          setCodeError(err.message || "Invalid auction code.");
+          setActiveAuction(null);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        // No auction code parameter in URL (#/register)
+        if (inviteId) {
+          setInvalidLink(true);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch open public auctions
+        try {
+          const { data: publicAuctions, error: pubError } = await supabase
+            .from('auctions')
+            .select('id, auction_name, qr_code_url, per_player_fees, status, auction_code, auction_logo, registration_type, venue, auction_date')
+            .eq('status', 'registration_open')
+            .eq('registration_type', 'public')
+            .order('created_at', { ascending: false });
+
+          if (pubError) throw pubError;
+
+          if (publicAuctions && publicAuctions.length === 1) {
+            // Exactly 1 active public auction: set as active and update search params
+            setActiveAuction(publicAuctions[0]);
+            setSearchParams({ code: publicAuctions[0].auction_code }, { replace: true });
+          } else if (publicAuctions && publicAuctions.length > 1) {
+            // Multiple active public auctions: offer selection list
+            setPublicAuctionsList(publicAuctions);
+            setActiveAuction(null);
+          } else {
+            // No public auctions found
+            setPublicAuctionsList([]);
+            setActiveAuction(null);
+          }
+        } catch (err) {
+          console.error("Error fetching public auctions:", err);
+          setActiveAuction(null);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeRegistration();
+  }, [auctionCodeParam, searchParams.get('invite')]);
 
   useEffect(() => {
     const inviteId = searchParams.get('invite');
@@ -122,7 +153,7 @@ const RegistrationPage = () => {
       };
       validateInvite();
     }
-  }, [activeAuction, searchParams]);
+  }, [activeAuction, searchParams.get('invite')]);
 
   const handleVerifyCodeSubmit = (e) => {
     e.preventDefault();
@@ -176,7 +207,12 @@ const RegistrationPage = () => {
         }
         finalMobile = invData.mobile;
       } else {
-        throw new Error("Invitation token is required to register.");
+        if (activeAuction.registration_type !== 'public') {
+          throw new Error("Invitation token is required to register.");
+        }
+        if (!formData.mobile || !formData.mobile.trim()) {
+          throw new Error("Mobile number is required.");
+        }
       }
 
       const finalNorm = normalizeMobile(finalMobile);
@@ -428,36 +464,108 @@ const RegistrationPage = () => {
       <div className="flex-col min-h-screen">
         <div className="spotlight"></div>
         <PageHeader title="Player Registration" showLogos={false} />
-        <main className="container flex-col items-center justify-center text-center" style={{ flex: 1, padding: '4rem 1rem', zIndex: 1, position: 'relative' }}>
-          <div className="glass-panel" style={{ padding: '3rem 2rem', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem' }}>🏏</div>
-            <h2 style={{ color: 'var(--text-main)', margin: '0' }}>ENTER TOURNAMENT CODE</h2>
-            <p className="text-muted" style={{ fontSize: '0.95rem', margin: 0 }}>
-              To register as a player, enter the unique tournament code shared by your organizer.
-            </p>
-            {codeError && (
-              <div style={{ background: 'rgba(255,0,0,0.1)', border: '1px solid #ff4444', color: '#ff4444', padding: '0.75rem', borderRadius: '6px', fontSize: '0.9rem' }}>
-                {codeError}
+        <main className="container flex-col items-center justify-center text-center" style={{ flex: 1, padding: '3rem 1rem', zIndex: 1, position: 'relative' }}>
+          
+          {publicAuctionsList.length > 0 ? (
+            <div style={{ maxWidth: '650px', width: '100%', margin: '0 auto 2rem' }}>
+              <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🏏</div>
+                <h2 style={{ color: 'var(--accent-gold)', margin: '0 0 0.5rem 0' }}>ACTIVE PUBLIC TOURNAMENTS</h2>
+                <p className="text-muted" style={{ fontSize: '0.95rem', marginBottom: '1.5rem' }}>
+                  Select an open tournament below to complete your player registration:
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {publicAuctionsList.map(a => (
+                    <div 
+                      key={a.id} 
+                      style={{ 
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem',
+                        background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--glass-border)', padding: '1rem 1.25rem', borderRadius: '8px',
+                        textAlign: 'left'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        {a.auction_logo ? (
+                          <img src={a.auction_logo} alt={a.auction_name} style={{ width: 48, height: 48, objectFit: 'contain', borderRadius: '6px', background: '#fff', padding: '2px' }} />
+                        ) : (
+                          <div style={{ width: 48, height: 48, borderRadius: '6px', background: 'var(--accent-gold)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                            {a.auction_name.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <h3 style={{ color: 'var(--text-main)', margin: 0, fontSize: '1.1rem' }}>{a.auction_name}</h3>
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                            Code: <strong style={{ color: 'var(--accent-green)' }}>{a.auction_code}</strong> {a.venue ? `• ${a.venue}` : ''}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setSearchParams({ code: a.auction_code });
+                          setActiveAuction(a);
+                        }}
+                        className="btn btn-primary"
+                        style={{ padding: '0.5rem 1.2rem', fontSize: '0.9rem' }}
+                      >
+                        Register Now →
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            )}
-            <form onSubmit={handleVerifyCodeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
-              <input
-                type="text"
-                value={inputCode}
-                onChange={e => setInputCode(e.target.value)}
-                placeholder="e.g. IPL26"
-                className="form-input text-center"
-                style={{ fontSize: '1.2rem', letterSpacing: '2px', textTransform: 'uppercase', padding: '0.75rem' }}
-                required
-              />
-              <button type="submit" className="btn btn-primary" style={{ width: '100%', fontSize: '1.1rem', padding: '0.75rem' }}>
-                Verify & Register
-              </button>
-            </form>
-            <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
-              <a href="#/" className="btn btn-outline" style={{ width: '100%' }}>Back to Home Hub</a>
+
+              <div className="glass-panel" style={{ padding: '1.5rem', textAlign: 'center' }}>
+                <h4 style={{ color: 'var(--text-muted)', margin: '0 0 0.75rem 0', fontSize: '0.9rem' }}>HAVE A PRIVATE CODE?</h4>
+                <form onSubmit={handleVerifyCodeSubmit} style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <input
+                    type="text"
+                    value={inputCode}
+                    onChange={e => setInputCode(e.target.value)}
+                    placeholder="Enter Code"
+                    className="form-input text-center"
+                    style={{ textTransform: 'uppercase', maxWidth: '200px', fontSize: '0.95rem' }}
+                  />
+                  <button type="submit" className="btn btn-outline" style={{ fontSize: '0.9rem' }}>
+                    Verify Code
+                  </button>
+                </form>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="glass-panel" style={{ padding: '3rem 2rem', maxWidth: '500px', width: '100%', display: 'flex', flexDirection: 'column', gap: '1.5rem', textAlign: 'center' }}>
+              <div style={{ fontSize: '3rem' }}>🏏</div>
+              <h2 style={{ color: 'var(--text-main)', margin: '0' }}>ENTER TOURNAMENT CODE</h2>
+              <p className="text-muted" style={{ fontSize: '0.95rem', margin: 0 }}>
+                To register as a player, enter the unique tournament code shared by your organizer.
+              </p>
+              {codeError && (
+                <div style={{ background: 'rgba(255,0,0,0.1)', border: '1px solid #ff4444', color: '#ff4444', padding: '0.75rem', borderRadius: '6px', fontSize: '0.9rem' }}>
+                  {codeError}
+                </div>
+              )}
+              <form onSubmit={handleVerifyCodeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+                <input
+                  type="text"
+                  value={inputCode}
+                  onChange={e => setInputCode(e.target.value)}
+                  placeholder="e.g. IPL26"
+                  className="form-input text-center"
+                  style={{ fontSize: '1.2rem', letterSpacing: '2px', textTransform: 'uppercase', padding: '0.75rem' }}
+                  required
+                />
+                <button type="submit" className="btn btn-primary" style={{ width: '100%', fontSize: '1.1rem', padding: '0.75rem' }}>
+                  Verify & Register
+                </button>
+              </form>
+              <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
+                <a href="#/" className="btn btn-outline" style={{ width: '100%' }}>Back to Home Hub</a>
+              </div>
+            </div>
+          )}
+
         </main>
       </div>
     );
