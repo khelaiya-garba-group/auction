@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children }) => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (password === 'auction5454' || password === 'malang@2026') {
+    if (password === 'auction5454' || password === 'cricket@2026') {
       setIsAuthenticated(true);
       localStorage.setItem('cap_admin_auth', 'true');
       setLoginError('');

@@ -651,7 +651,7 @@ export const generatePlayerSlidesPDF = async (playersList, filename, activeAucti
     doc.setFontSize(16);
     doc.setFont(undefined, 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text((activeAuction?.auction_name || 'MALANG CRICKET AUCTION').toUpperCase(), auctionLogoBase64 ? 36 : 15, 14);
+    doc.text((activeAuction?.auction_name || 'CRICKET AUCTION').toUpperCase(), auctionLogoBase64 ? 36 : 15, 14);
 
     doc.setFontSize(10);
     doc.setFont(undefined, 'normal');

@@ -1041,24 +1041,24 @@ const LiveAuctionProjectorPage = () => {
                                     <path d="M 60,140 L 52,165" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="8" strokeLinecap="round" />
                                     {/* Leg Right */}
                                     <path d="M 60,140 L 70,165" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="8" strokeLinecap="round" />
-                                    
+
                                     {/* Arms holding the bat */}
                                     <path d="M 65,90 Q 85,90 95,95" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="6" strokeLinecap="round" />
-                                    
+
                                     {/* Bat */}
                                     <g>
                                         {/* Grip */}
                                         <line x1="70" y1="85" x2="105" y2="55" stroke="#ffd700" strokeWidth="4" strokeLinecap="round" />
                                         {/* Blade */}
                                         <path d="M 100,60 L 140,25 L 146,30 L 106,65 Z" fill="var(--accent-gold)" stroke="rgba(0,0,0,0.2)" strokeWidth="1" />
-                                        
-                                        <animateTransform 
-                                            attributeName="transform" 
-                                            type="rotate" 
-                                            values="0 70 85; -35 70 85; 60 70 85; 0 70 85; 0 70 85" 
-                                            keyTimes="0; 0.3; 0.45; 0.7; 1" 
-                                            dur="2.5s" 
-                                            repeatCount="indefinite" 
+
+                                        <animateTransform
+                                            attributeName="transform"
+                                            type="rotate"
+                                            values="0 70 85; -35 70 85; 60 70 85; 0 70 85; 0 70 85"
+                                            keyTimes="0; 0.3; 0.45; 0.7; 1"
+                                            dur="2.5s"
+                                            repeatCount="indefinite"
                                         />
                                     </g>
                                 </g>
@@ -1077,10 +1077,10 @@ const LiveAuctionProjectorPage = () => {
                                 </circle>
                             </svg>
                         </div>
-                        <h1 style={{ 
-                            fontSize: 'clamp(1.5rem, 4vw, 3rem)', 
-                            color: 'var(--accent-gold)', 
-                            margin: 0, 
+                        <h1 style={{
+                            fontSize: 'clamp(1.5rem, 4vw, 3rem)',
+                            color: 'var(--accent-gold)',
+                            margin: 0,
                             letterSpacing: '3px',
                             fontWeight: 900,
                             textShadow: '0 0 20px rgba(255, 215, 0, 0.4)',
@@ -1230,7 +1230,7 @@ const LiveAuctionProjectorPage = () => {
                                     const bidVal = activePlayer?.current_bid_price || activeAuction?.base_price || 0;
                                     const bidStr = `₹ ${bidVal.toLocaleString('en-IN')}`;
                                     const len = bidStr.length;
-                                    let dynamicFontSize = isMobile 
+                                    let dynamicFontSize = isMobile
                                         ? (len > 16 ? '1.3rem' : len > 12 ? '1.7rem' : len > 9 ? '2.1rem' : '2.8rem')
                                         : (len > 18 ? '2.2rem' : len > 14 ? '2.8rem' : len > 11 ? '3.4rem' : len > 8 ? '4.2rem' : '5.5rem');
                                     return (
@@ -1358,7 +1358,7 @@ const LiveAuctionProjectorPage = () => {
                         zIndex: 2,
                         overflow: 'hidden'
                     }}>
-                        <div 
+                        <div
                             onClick={() => fetchData(true)}
                             style={{
                                 fontSize: 'clamp(0.6rem, 1.2vw, 0.8rem)',
@@ -1391,16 +1391,16 @@ const LiveAuctionProjectorPage = () => {
                                 width: 'max-content',
                                 padding: '4px 0'
                             }}>
-                                {(sponsors.length < 4 
-                                    ? [...sponsors, ...sponsors, ...sponsors, ...sponsors] 
+                                {(sponsors.length < 4
+                                    ? [...sponsors, ...sponsors, ...sponsors, ...sponsors]
                                     : [...sponsors, ...sponsors]
                                 ).map((sponsor, idx) => (
-                                    <div 
-                                        key={`${sponsor.id}-${idx}`} 
-                                        style={{ 
-                                            display: 'inline-flex', 
+                                    <div
+                                        key={`${sponsor.id}-${idx}`}
+                                        style={{
+                                            display: 'inline-flex',
                                             flexDirection: 'column',
-                                            alignItems: 'center', 
+                                            alignItems: 'center',
                                             gap: '4px',
                                             background: 'rgba(255, 255, 255, 0.03)',
                                             padding: '8px 16px',
@@ -1415,19 +1415,19 @@ const LiveAuctionProjectorPage = () => {
                                             {sponsor.name}
                                         </span>
                                         {sponsor.photo_url ? (
-                                            <img 
-                                                src={getOptimizedImageUrl(sponsor.photo_url, 300)} 
-                                                alt={sponsor.name} 
-                                                style={{ 
-                                                    height: 'clamp(60px, 8.5vh, 95px)', 
+                                            <img
+                                                src={getOptimizedImageUrl(sponsor.photo_url, 300)}
+                                                alt={sponsor.name}
+                                                style={{
+                                                    height: 'clamp(60px, 8.5vh, 95px)',
                                                     width: 'clamp(120px, 15vw, 200px)',
                                                     objectFit: 'contain',
                                                     borderRadius: '6px'
-                                                }} 
+                                                }}
                                             />
                                         ) : (
                                             <div style={{
-                                                height: 'clamp(60px, 8.5vh, 95px)', 
+                                                height: 'clamp(60px, 8.5vh, 95px)',
                                                 width: 'clamp(120px, 15vw, 200px)',
                                                 background: 'rgba(255,255,255,0.05)',
                                                 borderRadius: '6px',
@@ -1966,7 +1966,7 @@ const LiveAuctionProjectorPage = () => {
                         marginBottom: '1.5rem',
                         animation: 'pulseText 1s infinite alternate'
                     }}>
-                        🎰 {activeAuction?.auction_name || 'MALANG CRICKET LEAGUE'} - RANDOM PLAYER DRAW
+                        🎰 {activeAuction?.auction_name || 'CRICKET LEAGUE'} - RANDOM PLAYER DRAW
                     </div>
 
                     {/* Rolling Slot Machine Number Ticker */}
