@@ -1,0 +1,1 @@
+const t=n=>{if(!n)return"";const r=String(n).replace(/\D/g,"");return r.length>=10?r.slice(-10):r},e=n=>{const r=t(n);return r.length===10?`+91 ${r.slice(0,5)} ${r.slice(5)}`:n||""};export{e as f,t as n};
