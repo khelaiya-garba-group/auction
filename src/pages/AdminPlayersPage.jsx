@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { normalizeMobile, formatMobile } from '../utils/phoneUtils';
+import { tshirtSizes } from '../data/data';
 
 const getPlayerInitials = (p) => {
   if (!p) return '';
@@ -37,6 +38,7 @@ const AdminPlayersPage = () => {
     first_name: '', last_name: '', mobile: '', email: '',
     dob: '', area: '', gender: '',
     player_role: '', batting_style: '', bowling_style: '',
+    tshirt_name: '', tshirt_size: '', tshirt_number: '',
     photo: null, aadhar: null,
     is_captain: false,
     is_icon: false,
@@ -307,6 +309,7 @@ const AdminPlayersPage = () => {
       mobile: p.mobile || '', email: p.email || '',
       dob: p.dob || '', area: p.area || '', gender: p.gender || '',
       player_role: p.player_role || '', batting_style: p.batting_style || '', bowling_style: p.bowling_style || '',
+      tshirt_name: p.tshirt_name || '', tshirt_size: p.tshirt_size || '', tshirt_number: p.tshirt_number || '',
       photo: null, aadhar: null,
       is_captain: p.is_captain || false,
       is_icon: p.is_icon || false,
@@ -395,7 +398,10 @@ const AdminPlayersPage = () => {
         mobile: formData.mobile, email: formData.email,
         dob: formData.dob || null, area: formData.area || null, gender: formData.gender || null,
         photo_url, aadhar_card_url,
-        player_role: formData.player_role, batting_style: formData.batting_style, bowling_style: formData.bowling_style
+        player_role: formData.player_role, batting_style: formData.batting_style, bowling_style: formData.bowling_style,
+        tshirt_name: formData.tshirt_name || null,
+        tshirt_size: formData.tshirt_size || null,
+        tshirt_number: formData.tshirt_number || null
       };
 
       if (editingPlayer) {
@@ -409,7 +415,8 @@ const AdminPlayersPage = () => {
           is_icon: formData.is_icon || false,
           is_owner: formData.is_owner || false
         };
-        if (!formData.is_captain && !formData.is_icon && !formData.is_owner) {
+        // Only clear team_id if player was NOT sold in live auction and is not owner/icon/captain
+        if (!formData.is_captain && !formData.is_icon && !formData.is_owner && editingPlayer.auction_status !== 'sold') {
           apUpdatePayload.team_id = null;
         }
 
@@ -749,6 +756,27 @@ const AdminPlayersPage = () => {
                 </div>
               </div>
 
+              <h3 style={{ color: 'var(--text-main)', marginBottom: '1rem', fontSize: '1.1rem' }}>T-Shirt Details</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem 1.5rem', marginBottom: '1.5rem' }}>
+                <div className="form-group">
+                  <label className="form-label">T-Shirt Print Name</label>
+                  <input type="text" name="tshirt_name" value={formData.tshirt_name} onChange={handleFormChange} className="form-input" placeholder="e.g. JOHN D." />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">T-Shirt Size</label>
+                  <select name="tshirt_size" value={formData.tshirt_size} onChange={handleFormChange} className="form-select">
+                    <option value="">Select T-Shirt Size</option>
+                    {tshirtSizes.map(size => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">T-Shirt Number</label>
+                  <input type="text" name="tshirt_number" value={formData.tshirt_number} onChange={handleFormChange} className="form-input" placeholder="e.g. 7" />
+                </div>
+              </div>
+
               <h3 style={{ color: 'var(--text-main)', marginBottom: '1rem', fontSize: '1.1rem' }}>Documents</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem 1.5rem', marginBottom: '2rem' }}>
                 <div className="form-group">
@@ -943,6 +971,11 @@ const AdminPlayersPage = () => {
                         <td style={{ padding: '1rem' }}>
                           <div style={{ fontWeight: 'bold' }}>{p.first_name} {p.last_name}</div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{p.email}</div>
+                          {(p.tshirt_name || p.tshirt_size || p.tshirt_number) && (
+                            <div style={{ fontSize: '0.75rem', color: 'var(--accent-gold)', marginTop: '2px', fontWeight: '500' }}>
+                              👕 {p.tshirt_name || '-'} | Size: {p.tshirt_size || '-'} | No: {p.tshirt_number || '-'}
+                            </div>
+                          )}
                           <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.3rem' }}>
                             {p.is_captain && <span style={{ background: 'var(--accent-gold)', color: '#000', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>👑 CAPTAIN</span>}
                             {p.is_icon && <span style={{ background: 'var(--accent-gold)', color: '#000', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>ICON</span>}

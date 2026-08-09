@@ -41,7 +41,8 @@ const AuctionPage = () => {
     base_price: '',
     max_budget: '',
     max_players: '',
-    registration_type: 'private'
+    registration_type: 'private',
+    ask_tshirt_details: false
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -68,9 +69,11 @@ const AuctionPage = () => {
   }, []);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value, files, type, checked } = e.target;
     if (files) {
       setFormData(prev => ({ ...prev, [name]: files[0] }));
+    } else if (type === 'checkbox') {
+      setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -92,6 +95,7 @@ const AuctionPage = () => {
       max_budget: auction.max_budget || '',
       max_players: auction.max_players || '',
       registration_type: auction.registration_type || 'private',
+      ask_tshirt_details: auction.ask_tshirt_details || false,
       logo: null, // Don't reload file objects
       qr_code: null
     });
@@ -143,6 +147,7 @@ const AuctionPage = () => {
         venue: formData.venue || null,
         status: formData.status,
         registration_type: formData.registration_type || 'private',
+        ask_tshirt_details: !!formData.ask_tshirt_details,
         per_player_fees: formData.per_player_fees ? parseFloat(formData.per_player_fees) : null,
         number_of_teams: formData.number_of_teams ? parseInt(formData.number_of_teams, 10) : null,
         number_of_icon: formData.number_of_icon ? parseInt(formData.number_of_icon, 10) : null,
@@ -275,6 +280,13 @@ const AuctionPage = () => {
                 </select>
               </div>
               <div className="form-group">
+                <label className="form-label">T-Shirt Registration Details *</label>
+                <select required name="ask_tshirt_details" value={formData.ask_tshirt_details ? "true" : "false"} onChange={(e) => setFormData(prev => ({ ...prev, ask_tshirt_details: e.target.value === "true" }))} className="form-select">
+                  <option value="false">Disabled (Do not ask T-Shirt details)</option>
+                  <option value="true">Enabled (Ask Name, Size & Number)</option>
+                </select>
+              </div>
+              <div className="form-group">
                 <label className="form-label">Auction Logo {editingAuction?.auction_logo && '(Uploaded)'}</label>
                 <input type="file" name="logo" accept="image/*" onChange={handleChange} className="form-input" ref={fileInputRef} />
               </div>
@@ -359,6 +371,11 @@ const AuctionPage = () => {
                             }}>
                               {isPublic ? '🌐 Public' : '🔒 Private'}
                             </span>
+                            {a.ask_tshirt_details && (
+                              <div style={{ marginTop: '4px', fontSize: '0.75rem', color: 'var(--accent-gold)', fontWeight: 'bold' }}>
+                                👕 T-Shirt Details
+                              </div>
+                            )}
                             {isPublic && (
                               <button 
                                 type="button"

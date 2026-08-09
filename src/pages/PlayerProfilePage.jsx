@@ -225,6 +225,22 @@ const PlayerProfilePage = () => {
                 <div style={{ fontSize: isMobile ? '1.3rem' : '1.6rem', fontWeight: 600, color: 'var(--text-main)' }}>{player.area || 'N/A'}</div>
               </div>
 
+              {(player.tshirt_name || player.tshirt_size || player.tshirt_number) && (
+                <>
+                  <div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.4rem' }}>T-Shirt Print Name</div>
+                    <div style={{ fontSize: isMobile ? '1.3rem' : '1.6rem', fontWeight: 600, color: 'var(--text-main)' }}>{player.tshirt_name || 'N/A'}</div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.4rem' }}>T-Shirt Size & Number</div>
+                    <div style={{ fontSize: isMobile ? '1.3rem' : '1.6rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                      {player.tshirt_size || 'N/A'} {player.tshirt_number ? `(#${player.tshirt_number})` : ''}
+                    </div>
+                  </div>
+                </>
+              )}
+
               {location.state?.from === '/admin-players' && (
                 <div style={{
                   gridColumn: '1 / -1',

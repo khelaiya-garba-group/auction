@@ -743,13 +743,20 @@ export const generatePlayerSlidesPDF = async (playersList, filename, activeAucti
     doc.setFont(undefined, 'bold');
     doc.setTextColor(100, 116, 139);
     doc.text("AGE", col1, detailY);
+    if (playerDetails.tshirt_name || playerDetails.tshirt_size || playerDetails.tshirt_number) {
+      doc.text("T-SHIRT DETAILS", col2, detailY);
+    }
 
     detailY += 6;
-    doc.setFontSize(13);
+    doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
     doc.setTextColor(30, 41, 59);
     const ageVal = playerDetails.dob ? Math.abs(new Date(Date.now() - new Date(playerDetails.dob).getTime()).getUTCFullYear() - 1970) + ' YRS' : 'N/A';
     doc.text(ageVal, col1, detailY);
+    if (playerDetails.tshirt_name || playerDetails.tshirt_size || playerDetails.tshirt_number) {
+      const tshirtStr = `${playerDetails.tshirt_name || ''} | ${playerDetails.tshirt_size || ''} ${playerDetails.tshirt_number ? '#' + playerDetails.tshirt_number : ''}`.trim();
+      doc.text(tshirtStr, col2, detailY);
+    }
 
     detailY += 14;
     doc.setFillColor(255, 255, 255);
@@ -791,3 +798,283 @@ export const generateSinglePlayerCardPDF = async (player, activeAuction) => {
   const filename = `${player.first_name}_${player.last_name}_Card.pdf`.replace(/ /g, '_');
   await generatePlayerSlidesPDF([player], filename, activeAuction);
 };
+
+export const generateVendorTshirtPDF = async (activeAuction, teams, squads) => {
+  if (!activeAuction || !teams || teams.length === 0) {
+    alert("No team data available to generate T-Shirt Vendor PDF.");
+    return;
+  }
+  const doc = new jsPDF();
+  const auctionNameStr = (activeAuction.auction_name || 'AUCTION').toUpperCase();
+
+  // Helper for Top Header Banner
+  const renderHeaderBanner = (doc, title, subtitle) => {
+    doc.setFillColor(15, 23, 42); // Deep slate navy (#0F172A)
+    doc.rect(0, 0, 210, 24, 'F');
+    doc.setFillColor(217, 119, 6); // Gold accent line (#D97706)
+    doc.rect(0, 24, 210, 1.5, 'F');
+
+    doc.setFontSize(13);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text(title, 14, 12);
+
+    doc.setFontSize(8.5);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(203, 213, 225); // Light slate (#CBD5E1)
+    doc.text(subtitle, 14, 19);
+  };
+
+  // --- PAGE 1: OVERALL T-SHIRT SIZE SUMMARY ---
+  renderHeaderBanner(
+    doc,
+    `${auctionNameStr} - VENDOR MASTER T-SHIRT SHEET`,
+    `Generated on: ${new Date().toLocaleDateString()} | Total Teams: ${teams.length}`
+  );
+
+  // Calculate overall T-Shirt size totals summary
+  const sizeCounts = {};
+  let totalTshirts = 0;
+
+  teams.forEach(team => {
+    const squad = squads[team.id] || [];
+    squad.forEach(ap => {
+      const p = ap.players || {};
+      const sz = p.tshirt_size ? p.tshirt_size.trim() : 'Unspecified';
+      sizeCounts[sz] = (sizeCounts[sz] || 0) + 1;
+      totalTshirts++;
+    });
+  });
+
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(15, 23, 42);
+  doc.text(`OVERALL T-SHIRT SIZE SUMMARY (Total: ${totalTshirts} T-Shirts)`, 14, 32);
+
+  const summaryHead = [["T-Shirt Size", "Quantity Count"]];
+  const summaryBody = Object.keys(sizeCounts).sort().map(sz => [sz, sizeCounts[sz]]);
+
+  autoTable(doc, {
+    head: summaryHead,
+    body: summaryBody,
+    startY: 36,
+    margin: { left: 14, right: 14 },
+    headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+    bodyStyles: { fontSize: 9.5, textColor: [30, 41, 59] },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    styles: { cellPadding: 3.5, lineHeight: 1.2 },
+    columnStyles: { 0: { cellWidth: 90, fontStyle: 'bold' }, 1: { cellWidth: 50, fontStyle: 'bold', halign: 'center' } }
+  });
+
+  // --- EACH TEAM STARTS ON A NEW PAGE ---
+  for (let i = 0; i < teams.length; i++) {
+    doc.addPage(); // Force new page for each team
+
+    const team = teams[i];
+    const squad = squads[team.id] || [];
+
+    // Header Banner for Team
+    renderHeaderBanner(
+      doc,
+      `${team.team_name.toUpperCase()} - T-SHIRT ORDER DETAILS`,
+      `${auctionNameStr} | Team ${i + 1} of ${teams.length}`
+    );
+
+    // Calculate Team-specific T-Shirt Size summary
+    const teamSizeMap = {};
+    squad.forEach(ap => {
+      const p = ap.players || {};
+      const sz = p.tshirt_size ? p.tshirt_size.trim() : 'Unspecified';
+      teamSizeMap[sz] = (teamSizeMap[sz] || 0) + 1;
+    });
+
+    const sizeSummaryText = Object.entries(teamSizeMap)
+      .map(([sz, qty]) => `${sz}: ${qty}`)
+      .join('  |  ');
+
+    // Render Info Card Box
+    doc.setFillColor(248, 250, 252); // Soft gray fill (#F8FAFC)
+    doc.roundedRect(14, 29, 182, 12, 2, 2, 'F');
+    doc.setDrawColor(226, 232, 240); // Soft border (#E2E8F0)
+    doc.roundedRect(14, 29, 182, 12, 2, 2, 'D');
+
+    doc.setFontSize(9);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text(`Total Players: ${squad.length}`, 18, 36.5);
+
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(71, 85, 105);
+    doc.text(`Size Breakdown:  ${sizeSummaryText || 'None'}`, 60, 36.5);
+
+    const teamColumns = ["Sr.", "Player Name", "T-Shirt Print Name", "Size", "Number"];
+    const teamRows = squad.map((ap, idx) => {
+      const p = ap.players || {};
+      const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown';
+      return [
+        idx + 1,
+        fullName,
+        p.tshirt_name || '-',
+        p.tshirt_size || '-',
+        p.tshirt_number ? `#${p.tshirt_number}` : '-'
+      ];
+    });
+
+    autoTable(doc, {
+      head: [teamColumns],
+      body: teamRows,
+      startY: 45,
+      margin: { left: 14, right: 14 },
+      headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9.5 },
+      bodyStyles: { fontSize: 9, textColor: [30, 41, 59] },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { cellPadding: 3.5, verticalAlign: 'middle' },
+      columnStyles: {
+        0: { cellWidth: 12, halign: 'center', fontStyle: 'bold', textColor: [100, 116, 139] },
+        1: { fontStyle: 'bold', textColor: [15, 23, 42] },
+        2: { fontStyle: 'bold', textColor: [51, 65, 85] },
+        3: { fontStyle: 'bold', halign: 'center', textColor: [217, 119, 6] },
+        4: { fontStyle: 'bold', halign: 'center', textColor: [15, 23, 42] }
+      }
+    });
+  }
+
+  // Footer for page numbers
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let page = 1; page <= totalPages; page++) {
+    doc.setPage(page);
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(14, 280, 196, 280);
+
+    doc.setFontSize(8);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Page ${page} of ${totalPages}  |  Vendor Master T-Shirt Sheet`, 14, 286);
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, 196, 286, { align: 'right' });
+  }
+
+  const filename = `Vendor_Tshirt_Order_Sheet_${activeAuction?.auction_name?.replace(/ /g, '_') || 'All_Teams'}.pdf`;
+  doc.save(filename);
+};
+
+export const generateSingleTeamTshirtPDF = async (activeAuction, team, squad, options = {}) => {
+  if (!team) return null;
+  const doc = new jsPDF();
+  const auctionNameStr = (activeAuction?.auction_name || 'AUCTION').toUpperCase();
+
+  // Top Header Banner
+  doc.setFillColor(15, 23, 42); // Deep slate navy (#0F172A)
+  doc.rect(0, 0, 210, 24, 'F');
+  doc.setFillColor(217, 119, 6); // Gold accent line (#D97706)
+  doc.rect(0, 24, 210, 1.5, 'F');
+
+  doc.setFontSize(13);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(255, 255, 255);
+  doc.text(`${team.team_name.toUpperCase()} - T-SHIRT ORDER DETAILS`, 14, 12);
+
+  doc.setFontSize(8.5);
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(203, 213, 225); // Light slate (#CBD5E1)
+  doc.text(`${auctionNameStr} | OFFICIAL TEAM T-SHIRT SHEET`, 14, 19);
+
+  // Size breakdown calculation for this team
+  const teamSizeMap = {};
+  squad.forEach(ap => {
+    const p = ap.players || {};
+    const sz = p.tshirt_size ? p.tshirt_size.trim() : 'Unspecified';
+    teamSizeMap[sz] = (teamSizeMap[sz] || 0) + 1;
+  });
+
+  const sizeSummaryText = Object.entries(teamSizeMap)
+    .map(([sz, qty]) => `${sz}: ${qty}`)
+    .join('  |  ');
+
+  // Render Info Card Box
+  doc.setFillColor(248, 250, 252); // Soft gray fill (#F8FAFC)
+  doc.roundedRect(14, 29, 182, 12, 2, 2, 'F');
+  doc.setDrawColor(226, 232, 240); // Soft border (#E2E8F0)
+  doc.roundedRect(14, 29, 182, 12, 2, 2, 'D');
+
+  doc.setFontSize(9);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(15, 23, 42);
+  doc.text(`Total Players: ${squad.length}`, 18, 36.5);
+
+  doc.setFont(undefined, 'normal');
+  doc.setTextColor(71, 85, 105);
+  doc.text(`Size Breakdown:  ${sizeSummaryText || 'None'}`, 60, 36.5);
+
+  // Table of Team T-Shirt Details
+  const teamColumns = ["Sr.", "Player Name", "T-Shirt Print Name", "Size", "Number"];
+  const teamRows = squad.map((ap, idx) => {
+    const p = ap.players || {};
+    const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown';
+    return [
+      idx + 1,
+      fullName,
+      p.tshirt_name || '-',
+      p.tshirt_size || '-',
+      p.tshirt_number ? `#${p.tshirt_number}` : '-'
+    ];
+  });
+
+  autoTable(doc, {
+    head: [teamColumns],
+    body: teamRows,
+    startY: 45,
+    margin: { left: 14, right: 14 },
+    headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9.5 },
+    bodyStyles: { fontSize: 9, textColor: [30, 41, 59] },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    styles: { cellPadding: 3.5, verticalAlign: 'middle' },
+    columnStyles: {
+      0: { cellWidth: 12, halign: 'center', fontStyle: 'bold', textColor: [100, 116, 139] },
+      1: { fontStyle: 'bold', textColor: [15, 23, 42] },
+      2: { fontStyle: 'bold', textColor: [51, 65, 85] },
+      3: { fontStyle: 'bold', halign: 'center', textColor: [217, 119, 6] },
+      4: { fontStyle: 'bold', halign: 'center', textColor: [15, 23, 42] }
+    }
+  });
+
+  // Size summary mini table below main table
+  const summaryHead = [["T-Shirt Size", "Quantity Count"]];
+  const summaryBody = Object.keys(teamSizeMap).sort().map(sz => [sz, teamSizeMap[sz]]);
+
+  autoTable(doc, {
+    head: summaryHead,
+    body: summaryBody,
+    startY: doc.lastAutoTable.finalY + 8,
+    margin: { left: 14, right: 14 },
+    headStyles: { fillColor: [51, 65, 85], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+    bodyStyles: { fontSize: 8.5, textColor: [30, 41, 59] },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    styles: { cellPadding: 2.5 },
+    columnStyles: { 0: { cellWidth: 70, fontStyle: 'bold' }, 1: { cellWidth: 40, fontStyle: 'bold', halign: 'center' } }
+  });
+
+  // Footer
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let page = 1; page <= totalPages; page++) {
+    doc.setPage(page);
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(14, 280, 196, 280);
+
+    doc.setFontSize(8);
+    doc.setFont(undefined, 'normal');
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Page ${page} of ${totalPages}  |  ${team.team_name} T-Shirt Sheet`, 14, 286);
+    doc.text(`Generated on ${new Date().toLocaleDateString()}`, 196, 286, { align: 'right' });
+  }
+
+  const filename = `${team.team_name.replace(/ /g, '_')}_Tshirt_Details.pdf`;
+
+  if (options.returnDoc) {
+    return doc;
+  }
+
+  doc.save(filename);
+};
+

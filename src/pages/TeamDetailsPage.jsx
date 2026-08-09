@@ -4,7 +4,7 @@ import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { getOptimizedImageUrl } from '../services/cloudinary';
-import { generateAllTeamsPDF, generateSingleTeamPDF } from '../services/pdfGenerator';
+import { generateAllTeamsPDF, generateSingleTeamPDF, generateVendorTshirtPDF, generateSingleTeamTshirtPDF } from '../services/pdfGenerator';
 import { Download, LayoutGrid, List, User } from 'lucide-react';
 
 const getTeamInitials = (name) => {
@@ -54,6 +54,97 @@ const TeamDetailsPage = () => {
         } finally {
             setIsGeneratingPdf(false);
         }
+    };
+
+    const handleShareTshirtWhatsApp = (team) => {
+        if (!team) return;
+        const squad = squads[team.id] || [];
+
+        let msg = `👕 *${team.team_name.toUpperCase()} - T-SHIRT SIZES & DETAILS*\n`;
+        if (activeAuction?.auction_name) {
+            msg += `🏆 Event: *${activeAuction.auction_name}*\n`;
+        }
+        msg += `👥 Total Players: ${squad.length}\n\n`;
+
+        if (squad.length === 0) {
+            msg += `No players registered in this team yet.\n`;
+        } else {
+            squad.forEach((ap, idx) => {
+                const p = ap.players || {};
+                const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown';
+                const printName = p.tshirt_name || '-';
+                const size = p.tshirt_size || '-';
+                const number = p.tshirt_number ? `#${p.tshirt_number}` : '-';
+                msg += `${idx + 1}. *${fullName}*\n   👕 Size: *${size}* | Print: *${printName}* | No: *${number}*\n`;
+            });
+        }
+
+        const encoded = encodeURIComponent(msg);
+        window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
+    };
+
+    const handleDownloadVendorTshirtSheet = async () => {
+        setIsGeneratingPdf(true);
+        try {
+            await generateVendorTshirtPDF(activeAuction, teams, squads);
+        } catch (err) {
+            console.error("Vendor T-Shirt PDF generation failed:", err);
+            alert("Failed to generate Vendor T-Shirt Sheet.");
+        } finally {
+            setIsGeneratingPdf(false);
+        }
+    };
+
+    const handleDownloadSingleTeamTshirtPdf = async (team) => {
+        if (!team) return;
+        const squad = squads[team.id] || [];
+        await generateSingleTeamTshirtPDF(activeAuction, team, squad);
+    };
+
+    const handleSendTshirtPdfWhatsApp = async (team) => {
+        if (!team) return;
+        const squad = squads[team.id] || [];
+
+        let msg = `👕 *${team.team_name.toUpperCase()} - T-SHIRT ORDER & SIZES*\n`;
+        if (activeAuction?.auction_name) {
+            msg += `🏆 Event: *${activeAuction.auction_name}*\n`;
+        }
+        msg += `👥 Total Players: ${squad.length}\n\n`;
+
+        squad.forEach((ap, idx) => {
+            const p = ap.players || {};
+            const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown';
+            const printName = p.tshirt_name || '-';
+            const size = p.tshirt_size || '-';
+            const number = p.tshirt_number ? `#${p.tshirt_number}` : '-';
+            msg += `${idx + 1}. *${fullName}*\n   👕 Size: *${size}* | Print: *${printName}* | No: *${number}*\n`;
+        });
+
+        try {
+            const doc = await generateSingleTeamTshirtPDF(activeAuction, team, squad, { returnDoc: true });
+            if (doc) {
+                const pdfBlob = doc.output('blob');
+                const filename = `${team.team_name.replace(/ /g, '_')}_Tshirt_Details.pdf`;
+                const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
+
+                if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                    await navigator.share({
+                        title: `${team.team_name} T-Shirt Details PDF`,
+                        text: msg,
+                        files: [pdfFile]
+                    });
+                    return;
+                }
+                
+                doc.save(filename);
+                msg += `\n📎 *Note: The official T-Shirt PDF sheet has been saved as "${filename}". Attach it in this WhatsApp chat!*`;
+            }
+        } catch (err) {
+            console.warn("Share T-Shirt PDF API fallback:", err);
+        }
+
+        const encoded = encodeURIComponent(msg);
+        window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank');
     };
 
     const toggleSquad = (teamId) => {
@@ -423,27 +514,49 @@ const TeamDetailsPage = () => {
                         </button>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
                         {activeAuction && teams.length > 0 && (
-                            <button 
-                                onClick={handleDownloadPdf}
-                                disabled={isGeneratingPdf}
-                                className="btn btn-outline" 
-                                style={{ 
-                                    padding: '0.5rem 1.2rem', 
-                                    border: '1px solid var(--accent-green)', 
-                                    color: 'var(--accent-green)', 
-                                    fontSize: '0.9rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem',
-                                    cursor: isGeneratingPdf ? 'wait' : 'pointer',
-                                    background: 'transparent',
-                                    opacity: isGeneratingPdf ? 0.7 : 1
-                                }}
-                            >
-                                <Download size={16} /> {isGeneratingPdf ? 'Generating PDF...' : 'Download All Teams PDF'}
-                            </button>
+                            <>
+                                <button 
+                                    onClick={handleDownloadVendorTshirtSheet}
+                                    disabled={isGeneratingPdf}
+                                    className="btn" 
+                                    style={{ 
+                                        padding: '0.5rem 1.2rem', 
+                                        background: 'var(--accent-gold)', 
+                                        color: '#000', 
+                                        fontWeight: 'bold',
+                                        fontSize: '0.9rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        cursor: isGeneratingPdf ? 'wait' : 'pointer',
+                                        opacity: isGeneratingPdf ? 0.7 : 1
+                                    }}
+                                    title="Download team-wise and size-wise summary PDF for clothing vendor"
+                                >
+                                    👕 {isGeneratingPdf ? 'Generating...' : 'Vendor T-Shirt Sheet (All Teams)'}
+                                </button>
+                                <button 
+                                    onClick={handleDownloadPdf}
+                                    disabled={isGeneratingPdf}
+                                    className="btn btn-outline" 
+                                    style={{ 
+                                        padding: '0.5rem 1.2rem', 
+                                        border: '1px solid var(--accent-green)', 
+                                        color: 'var(--accent-green)', 
+                                        fontSize: '0.9rem',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        cursor: isGeneratingPdf ? 'wait' : 'pointer',
+                                        background: 'transparent',
+                                        opacity: isGeneratingPdf ? 0.7 : 1
+                                    }}
+                                >
+                                    <Download size={16} /> {isGeneratingPdf ? 'Generating PDF...' : 'Download All Teams PDF'}
+                                </button>
+                            </>
                         )}
                         <Link to="/live-auction" className="btn btn-primary" style={{ padding: '0.5rem 1.2rem', background: 'var(--accent-gold)', fontSize: '0.9rem' }}>Live Bidding</Link>
                     </div>
@@ -584,30 +697,38 @@ const TeamDetailsPage = () => {
 
                                     {/* Action Buttons */}
                                     <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.35rem' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem' }}>
                                             <button
-                                                onClick={() => handleShareWhatsApp(team)}
+                                                onClick={() => handleDownloadSingleTeamTshirtPdf(team)}
                                                 className="btn"
                                                 style={{ fontSize: '0.7rem', padding: '0.4rem 0.3rem', background: '#25D366', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.2rem', fontWeight: 'bold' }}
-                                                title="Share Squad Details on WhatsApp"
+                                                title="Directly Download Team T-Shirt PDF Document to Device"
                                             >
-                                                💬 Text
-                                            </button>
-                                            <button
-                                                onClick={() => handleSendPdfWhatsApp(team)}
-                                                className="btn"
-                                                style={{ fontSize: '0.7rem', padding: '0.4rem 0.3rem', background: '#128C7E', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.2rem', fontWeight: 'bold' }}
-                                                title="Send PDF Document on WhatsApp"
-                                            >
-                                                📲 PDF
+                                                📥 Save T-Shirt PDF
                                             </button>
                                             <button
                                                 onClick={() => handleDownloadSingleTeamPdf(team)}
                                                 className="btn btn-outline"
                                                 style={{ fontSize: '0.7rem', padding: '0.4rem 0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.2rem' }}
-                                                title="Download Team PDF File"
+                                                title="Directly Download Full Team Squad PDF Document to Device"
                                             >
-                                                📄 Save
+                                                📥 Save Squad PDF
+                                            </button>
+                                            <button
+                                                onClick={() => handleShareTshirtWhatsApp(team)}
+                                                className="btn"
+                                                style={{ fontSize: '0.7rem', padding: '0.4rem 0.3rem', background: '#128C7E', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.2rem', fontWeight: 'bold' }}
+                                                title="Share T-Shirt Sizes & Details Text on WhatsApp"
+                                            >
+                                                👕 T-Shirt WA
+                                            </button>
+                                            <button
+                                                onClick={() => handleShareWhatsApp(team)}
+                                                className="btn btn-outline"
+                                                style={{ fontSize: '0.7rem', padding: '0.4rem 0.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.2rem' }}
+                                                title="Share Squad Details Text on WhatsApp"
+                                            >
+                                                💬 Squad WA
                                             </button>
                                         </div>
 
@@ -770,28 +891,36 @@ const TeamDetailsPage = () => {
                                         {/* Action Buttons */}
                                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
                                             <button
-                                                onClick={() => handleShareWhatsApp(team)}
+                                                onClick={() => handleDownloadSingleTeamTshirtPdf(team)}
                                                 className="btn"
                                                 style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: '#25D366', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 'bold' }}
-                                                title="Share Squad Details on WhatsApp"
+                                                title="Directly Download Team T-Shirt PDF Document to Device"
                                             >
-                                                💬 Text WhatsApp
-                                            </button>
-                                            <button
-                                                onClick={() => handleSendPdfWhatsApp(team)}
-                                                className="btn"
-                                                style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: '#128C7E', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 'bold' }}
-                                                title="Send PDF Document on WhatsApp"
-                                            >
-                                                📲 Send PDF
+                                                📥 Save T-Shirt PDF
                                             </button>
                                             <button
                                                 onClick={() => handleDownloadSingleTeamPdf(team)}
                                                 className="btn btn-outline"
                                                 style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                                                title="Download Team PDF File"
+                                                title="Directly Download Full Team Squad PDF Document to Device"
                                             >
-                                                📄 Save PDF
+                                                📥 Save Squad PDF
+                                            </button>
+                                            <button
+                                                onClick={() => handleShareTshirtWhatsApp(team)}
+                                                className="btn"
+                                                style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', background: '#128C7E', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 'bold' }}
+                                                title="Share T-Shirt Sizes & Details Text on WhatsApp"
+                                            >
+                                                👕 T-Shirt WA
+                                            </button>
+                                            <button
+                                                onClick={() => handleShareWhatsApp(team)}
+                                                className="btn btn-outline"
+                                                style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                                                title="Share Squad Details Text on WhatsApp"
+                                            >
+                                                💬 Squad WA
                                             </button>
                                             <button 
                                                 onClick={() => toggleSquad(team.id)} 
@@ -959,9 +1088,9 @@ const TeamDetailsPage = () => {
                                                 </div>
                                             </div>
 
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem' }}>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
                                                 <button
-                                                    onClick={() => handleShareWhatsApp(selectedTeam)}
+                                                    onClick={() => handleDownloadSingleTeamTshirtPdf(selectedTeam)}
                                                     className="btn"
                                                     style={{
                                                         padding: '0.6rem 0.4rem',
@@ -973,36 +1102,14 @@ const TeamDetailsPage = () => {
                                                         fontSize: '0.75rem',
                                                         display: 'flex',
                                                         alignItems: 'center',
-                                                        justify: 'center',
+                                                        justifyContent: 'center',
                                                         gap: '0.25rem',
                                                         boxShadow: '0 4px 12px rgba(37,211,102,0.3)',
                                                         cursor: 'pointer'
                                                     }}
-                                                    title="Share Squad Details on WhatsApp"
+                                                    title="Directly Download Team T-Shirt PDF Document to Device"
                                                 >
-                                                    💬 Squad Text
-                                                </button>
-                                                <button
-                                                    onClick={() => handleSendPdfWhatsApp(selectedTeam)}
-                                                    className="btn"
-                                                    style={{
-                                                        padding: '0.6rem 0.4rem',
-                                                        background: '#128C7E',
-                                                        color: '#fff',
-                                                        border: 'none',
-                                                        borderRadius: '8px',
-                                                        fontWeight: 'bold',
-                                                        fontSize: '0.75rem',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justify: 'center',
-                                                        gap: '0.25rem',
-                                                        boxShadow: '0 4px 12px rgba(18,140,126,0.3)',
-                                                        cursor: 'pointer'
-                                                    }}
-                                                    title="Send PDF Document on WhatsApp"
-                                                >
-                                                    📲 Send PDF
+                                                    📥 Save T-Shirt PDF
                                                 </button>
                                                 <button
                                                     onClick={() => handleDownloadSingleTeamPdf(selectedTeam)}
@@ -1016,13 +1123,52 @@ const TeamDetailsPage = () => {
                                                         fontSize: '0.75rem',
                                                         display: 'flex',
                                                         alignItems: 'center',
-                                                        justify: 'center',
+                                                        justifyContent: 'center',
                                                         gap: '0.25rem',
                                                         cursor: 'pointer'
                                                     }}
-                                                    title="Download PDF Squad for this Team"
+                                                    title="Directly Download Full Team Squad PDF Document to Device"
                                                 >
-                                                    📄 Save PDF
+                                                    📥 Save Squad PDF
+                                                </button>
+                                                <button
+                                                    onClick={() => handleShareTshirtWhatsApp(selectedTeam)}
+                                                    className="btn"
+                                                    style={{
+                                                        padding: '0.6rem 0.4rem',
+                                                        background: '#128C7E',
+                                                        color: '#fff',
+                                                        border: 'none',
+                                                        borderRadius: '8px',
+                                                        fontWeight: 'bold',
+                                                        fontSize: '0.75rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gap: '0.25rem',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    title="Share T-Shirt Details Text on WhatsApp"
+                                                >
+                                                    👕 T-Shirt WA
+                                                </button>
+                                                <button
+                                                    onClick={() => handleShareWhatsApp(selectedTeam)}
+                                                    className="btn btn-outline"
+                                                    style={{
+                                                        padding: '0.6rem 0.4rem',
+                                                        borderRadius: '8px',
+                                                        fontWeight: 'bold',
+                                                        fontSize: '0.75rem',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gap: '0.25rem',
+                                                        cursor: 'pointer'
+                                                    }}
+                                                    title="Share Squad Details Text on WhatsApp"
+                                                >
+                                                    💬 Squad WA
                                                 </button>
                                             </div>
                                         </div>

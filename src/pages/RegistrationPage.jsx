@@ -5,6 +5,7 @@ import { uploadToCloudinary } from '../services/cloudinary';
 import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
 import { normalizeMobile } from '../utils/phoneUtils';
+import { tshirtSizes } from '../data/data';
 
 const RegistrationPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,6 +27,7 @@ const RegistrationPage = () => {
     first_name: '', last_name: '', mobile: '', email: '',
     dob: '', area: '', gender: '',
     player_role: '', batting_style: '', bowling_style: '',
+    tshirt_name: '', tshirt_size: '', tshirt_number: '',
     photo: null, aadhar: null
   });
 
@@ -49,7 +51,7 @@ const RegistrationPage = () => {
         try {
           const { data, error } = await supabase
             .from('auctions')
-            .select('id, auction_name, qr_code_url, per_player_fees, status, auction_code, auction_logo, registration_type')
+            .select('id, auction_name, qr_code_url, per_player_fees, status, auction_code, auction_logo, registration_type, ask_tshirt_details')
             .eq('auction_code', auctionCodeParam)
             .maybeSingle();
 
@@ -88,7 +90,7 @@ const RegistrationPage = () => {
         try {
           const { data: publicAuctions, error: pubError } = await supabase
             .from('auctions')
-            .select('id, auction_name, qr_code_url, per_player_fees, status, auction_code, auction_logo, registration_type, venue, auction_date')
+            .select('id, auction_name, qr_code_url, per_player_fees, status, auction_code, auction_logo, registration_type, venue, auction_date, ask_tshirt_details')
             .eq('status', 'registration_open')
             .eq('registration_type', 'public')
             .order('created_at', { ascending: false });
@@ -252,7 +254,10 @@ const RegistrationPage = () => {
         aadhar_card_url,
         player_role: formData.player_role,
         batting_style: formData.batting_style,
-        bowling_style: formData.bowling_style
+        bowling_style: formData.bowling_style,
+        tshirt_name: formData.tshirt_name || null,
+        tshirt_size: formData.tshirt_size || null,
+        tshirt_number: formData.tshirt_number || null
       };
 
       const { data: playerData, error: playerError } = await supabase
@@ -667,6 +672,31 @@ const RegistrationPage = () => {
                 </select>
               </div>
             </div>
+
+            {activeAuction?.ask_tshirt_details && (
+              <>
+                <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', margin: '2rem 0 1.5rem', color: 'var(--accent-gold)' }}>T-Shirt Registration Details</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem 1.5rem' }}>
+                  <div className="form-group">
+                    <label className="form-label">T-Shirt Print Name *</label>
+                    <input required={!!activeAuction?.ask_tshirt_details} type="text" name="tshirt_name" className="form-input" placeholder="Name to print on T-Shirt" value={formData.tshirt_name} onChange={handleChange} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">T-Shirt Size *</label>
+                    <select required={!!activeAuction?.ask_tshirt_details} name="tshirt_size" className="form-select" value={formData.tshirt_size} onChange={handleChange}>
+                      <option value="">Select T-Shirt Size</option>
+                      {tshirtSizes.map(size => (
+                        <option key={size} value={size}>{size}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">T-Shirt Number</label>
+                    <input type="text" name="tshirt_number" className="form-input" placeholder="e.g. 7 or 18" value={formData.tshirt_number} onChange={handleChange} />
+                  </div>
+                </div>
+              </>
+            )}
 
             <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', margin: '2rem 0 1.5rem', color: 'var(--accent-gold)' }}>Documents</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem 1.5rem' }}>
