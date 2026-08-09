@@ -8,3 +8,4 @@
 8. Manage proper pagination wise query, search.
 9. Proper validation.
 10. Make a file where we can add the information for the current auction projects flow and database structure. 
+11. So bid price value in the words on the live screen, team budget remaing screen, in team details too. example if bid price is 100000 then show 1 lakh, if 1000 then show 1 thousands. if 10000000 then 1 crore, etc.
