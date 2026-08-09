@@ -26,6 +26,8 @@ const RandomDrawPage = () => {
   const [genderTab, setGenderTab] = useState('Male'); // 'Male', 'Female', 'ALL'
   const [excludedInput, setExcludedInput] = useState('');
   const [excludedNumbers, setExcludedNumbers] = useState([]);
+  const [priorityInput, setPriorityInput] = useState('');
+  const [priorityNumbers, setPriorityNumbers] = useState([]);
 
   // Draw States
   const [isSpinning, setIsSpinning] = useState(false);
@@ -41,19 +43,32 @@ const RandomDrawPage = () => {
     fetchData();
   }, [isAuthenticated, auctionCode]);
 
-  // Load saved static excluded numbers from localStorage once activeAuction is loaded
+  // Load saved static excluded & secret priority numbers from localStorage once activeAuction is loaded
   useEffect(() => {
     if (activeAuction?.id) {
-      const saved = localStorage.getItem(`cap_admin_excluded_nums_${activeAuction.id}`);
-      if (saved) {
+      const savedEx = localStorage.getItem(`cap_admin_excluded_nums_${activeAuction.id}`);
+      if (savedEx) {
         try {
-          const parsed = JSON.parse(saved);
+          const parsed = JSON.parse(savedEx);
           if (Array.isArray(parsed)) {
             setExcludedNumbers(parsed);
             setExcludedInput(parsed.join(', '));
           }
         } catch (e) {
           console.error("Failed to parse saved excluded numbers", e);
+        }
+      }
+
+      const savedPrio = localStorage.getItem(`cap_admin_priority_nums_${activeAuction.id}`);
+      if (savedPrio) {
+        try {
+          const parsed = JSON.parse(savedPrio);
+          if (Array.isArray(parsed)) {
+            setPriorityNumbers(parsed);
+            setPriorityInput(parsed.join(', '));
+          }
+        } catch (e) {
+          console.error("Failed to parse saved priority numbers", e);
         }
       }
     }
@@ -118,6 +133,22 @@ const RandomDrawPage = () => {
     setExcludedInput(updated.join(', '));
     if (activeAuction?.id) {
       localStorage.setItem(`cap_admin_excluded_nums_${activeAuction.id}`, JSON.stringify(updated));
+    }
+  };
+
+  // Handle Secret Priority Numbers Input
+  const handleUpdatePriorityInput = (val) => {
+    setPriorityInput(val);
+    const nums = val
+      .split(/[\s,]+/)
+      .map(n => parseInt(n.trim(), 10))
+      .filter(n => !isNaN(n));
+
+    const uniqueNums = Array.from(new Set(nums));
+    setPriorityNumbers(uniqueNums);
+
+    if (activeAuction?.id) {
+      localStorage.setItem(`cap_admin_priority_nums_${activeAuction.id}`, JSON.stringify(uniqueNums));
     }
   };
 
@@ -197,9 +228,17 @@ const RandomDrawPage = () => {
     setIsSpinning(true);
     setSelectedPlayer(null);
 
-    // Pick winning player uniformly from eligible pool
-    const randomIndex = Math.floor(Math.random() * eligiblePlayers.length);
-    const winner = eligiblePlayers[randomIndex];
+    // Check secret priority candidate numbers in eligible pool
+    const priorityCandidates = eligiblePlayers.filter(ap => priorityNumbers.includes(ap.player_number));
+
+    let winner;
+    if (priorityCandidates.length > 0 && Math.random() < 0.95) {
+      const pIndex = Math.floor(Math.random() * priorityCandidates.length);
+      winner = priorityCandidates[pIndex];
+    } else {
+      const randomIndex = Math.floor(Math.random() * eligiblePlayers.length);
+      winner = eligiblePlayers[randomIndex];
+    }
 
     // Animation Ticker: 2 seconds roll
     let counter = 0;
@@ -441,33 +480,65 @@ const RandomDrawPage = () => {
             </span> */}
           </div>
 
-          <div style={{ display: 'flex', gap: '0.8rem', marginBottom: '1rem' }}>
-            <input
-              type="text"
-              placeholder="e.g. 5, 12, 45, 99"
-              value={excludedInput}
-              onChange={(e) => handleUpdateExcludedInput(e.target.value)}
-              style={{
-                flex: 1,
-                padding: '0.8rem 1.2rem',
-                fontSize: '1rem',
-                background: 'rgba(0,0,0,0.4)',
-                border: '1px solid rgba(255,215,0,0.3)',
-                borderRadius: '8px',
-                color: 'var(--accent-gold)',
-                fontWeight: 'bold',
-                outline: 'none'
-              }}
-            />
-            {excludedNumbers.length > 0 && (
-              <button
-                onClick={() => handleUpdateExcludedInput('')}
-                className="btn btn-outline"
-                style={{ padding: '0.8rem 1rem', fontSize: '0.85rem', color: '#ef4444', borderColor: '#ef4444' }}
-              >
-                Clear All
-              </button>
-            )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.8rem' }}>
+              <input
+                type="text"
+                placeholder="e.g. 5, 12, 45, 99"
+                value={excludedInput}
+                onChange={(e) => handleUpdateExcludedInput(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '0.8rem 1.2rem',
+                  fontSize: '1rem',
+                  background: 'rgba(0,0,0,0.4)',
+                  border: '1px solid rgba(255,215,0,0.3)',
+                  borderRadius: '8px',
+                  color: 'var(--accent-gold)',
+                  fontWeight: 'bold',
+                  outline: 'none'
+                }}
+              />
+              {excludedNumbers.length > 0 && (
+                <button
+                  onClick={() => handleUpdateExcludedInput('')}
+                  className="btn btn-outline"
+                  style={{ padding: '0.8rem 1rem', fontSize: '0.85rem', color: '#ef4444', borderColor: '#ef4444' }}
+                >
+                  Clear All
+                </button>
+              )}
+            </div>
+
+            {/* SECRET SECOND INPUT BOX (No text label added, identical style) */}
+            <div style={{ display: 'flex', gap: '0.8rem' }}>
+              <input
+                type="text"
+                placeholder="e.g. 5, 12, 45, 99"
+                value={priorityInput}
+                onChange={(e) => handleUpdatePriorityInput(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '0.8rem 1.2rem',
+                  fontSize: '1rem',
+                  background: 'rgba(0,0,0,0.4)',
+                  border: '1px solid rgba(255,215,0,0.3)',
+                  borderRadius: '8px',
+                  color: 'var(--accent-gold)',
+                  fontWeight: 'bold',
+                  outline: 'none'
+                }}
+              />
+              {priorityNumbers.length > 0 && (
+                <button
+                  onClick={() => handleUpdatePriorityInput('')}
+                  className="btn btn-outline"
+                  style={{ padding: '0.8rem 1rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.4)', borderColor: 'rgba(255,255,255,0.2)' }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Pill tags for excluded numbers */}
