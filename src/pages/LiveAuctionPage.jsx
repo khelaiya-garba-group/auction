@@ -4,6 +4,8 @@ import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { getOptimizedImageUrl } from '../services/cloudinary';
+import { soundEngine } from '../services/soundEffects';
+import { Volume2, VolumeX } from 'lucide-react';
 
 const getTeamInitials = (name) => {
   if (!name) return '';
@@ -27,6 +29,7 @@ const LiveAuctionPage = () => {
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('bidding'); // 'bidding' or 'sold'
+    const [isMuted, setIsMuted] = useState(soundEngine.isMuted());
 
     const [activeAuction, setActiveAuction] = useState(null);
     const [teams, setTeams] = useState([]);
@@ -221,6 +224,7 @@ const LiveAuctionPage = () => {
                 .eq('id', activePlayer.id);
 
             if (error) throw error;
+            soundEngine.playBidChime();
             
             // Update activePlayer and players array locally for immediate reactivity
             setActivePlayer(prev => ({
@@ -304,6 +308,7 @@ const LiveAuctionPage = () => {
                 .eq('id', activePlayer.id);
 
             if (error) throw error;
+            soundEngine.playBidChime();
 
             // Update activePlayer and players array locally for immediate reactivity
             setActivePlayer(prev => ({
@@ -438,6 +443,7 @@ const LiveAuctionPage = () => {
                 .eq('id', activePlayer.id);
 
             if (error) throw error;
+            soundEngine.playSoldGavelSound();
             await fetchData();
         } catch (err) {
             alert("Failed to finalize auction");
@@ -465,6 +471,7 @@ const LiveAuctionPage = () => {
                 .eq('id', activePlayer.id);
 
             if (error) throw error;
+            soundEngine.playUnsoldBuzzerSound();
             await fetchData();
         } catch (err) {
             alert("Failed to mark as unsold");
@@ -604,7 +611,16 @@ const LiveAuctionPage = () => {
                     >
                         UNSOLD ({unsoldPlayers.length})
                     </button>
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <button
+                          onClick={() => setIsMuted(soundEngine.toggleMute())}
+                          className="btn btn-outline"
+                          style={{ padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}
+                          title={isMuted ? "Unmute Sound Effects" : "Mute Sound Effects"}
+                        >
+                          {isMuted ? <VolumeX size={16} color="#ef4444" /> : <Volume2 size={16} color="var(--accent-green)" />}
+                          {isMuted ? 'Muted' : 'Sound ON'}
+                        </button>
                         <Link to={`/draw?code=${auctionCode}`} className="btn" style={{ padding: '0.6rem 1rem', background: 'var(--accent-gold)', color: '#000', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>🎰 Random Draw</Link>
                         <Link to="/team-details" className="btn btn-outline" style={{ padding: '0.6rem 1rem' }}>Team Squad & Purse</Link>
                         <Link to="/admin" className="btn btn-outline" style={{ padding: '0.6rem 1rem' }}>Back to Admin</Link>

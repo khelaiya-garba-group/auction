@@ -4,7 +4,8 @@ import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { getOptimizedImageUrl } from '../services/cloudinary';
-import { Shuffle, Flame, Sparkles, X, RotateCcw, UserCheck, ShieldAlert } from 'lucide-react';
+import { soundEngine } from '../services/soundEffects';
+import { Shuffle, Flame, Sparkles, X, RotateCcw, UserCheck, ShieldAlert, Volume2, VolumeX } from 'lucide-react';
 
 const getPlayerInitials = (p) => {
   if (!p) return 'P';
@@ -33,6 +34,7 @@ const RandomDrawPage = () => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [displayNumber, setDisplayNumber] = useState('?');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [isMuted, setIsMuted] = useState(soundEngine.isMuted());
   const spinTimerRef = useRef(null);
 
   useEffect(() => {
@@ -248,12 +250,14 @@ const RandomDrawPage = () => {
 
     spinTimerRef.current = setInterval(async () => {
       counter++;
+      soundEngine.playSpinClick();
       const randomDisplayIndex = Math.floor(Math.random() * eligiblePlayers.length);
       const tempNum = eligiblePlayers[randomDisplayIndex]?.player_number ?? '?';
       setDisplayNumber(`#${tempNum}`);
 
       if (counter >= maxRolls) {
         clearInterval(spinTimerRef.current);
+        soundEngine.playWinnerRevealSound();
         setDisplayNumber(`#${winner.player_number}`);
         setSelectedPlayer(winner);
         setIsSpinning(false);
@@ -389,6 +393,15 @@ const RandomDrawPage = () => {
             </h2>
           </div>
           <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+            <button
+              onClick={() => setIsMuted(soundEngine.toggleMute())}
+              className="btn btn-outline"
+              style={{ padding: '0.5rem 0.9rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}
+              title={isMuted ? "Unmute Sound Effects" : "Mute Sound Effects"}
+            >
+              {isMuted ? <VolumeX size={16} color="#ef4444" /> : <Volume2 size={16} color="var(--accent-green)" />}
+              {isMuted ? 'Muted' : 'Sound ON'}
+            </button>
             <Link to={`/live-auction${codeParam}`} className="btn" style={{ padding: '0.5rem 1.2rem', background: '#ef4444', color: '#fff', fontWeight: 'bold', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <Flame size={16} /> LIVE BIDDING ROOM
             </Link>
