@@ -6,6 +6,8 @@ import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { getOptimizedImageUrl } from '../services/cloudinary';
 import { soundEngine } from '../services/soundEffects';
 import { Volume2, VolumeX } from 'lucide-react';
+import IndianCurrencyDisplay from '../components/IndianCurrencyDisplay';
+import { formatIndianCurrencyWords } from '../utils/currencyUtils';
 
 const getTeamInitials = (name) => {
   if (!name) return '';
@@ -671,20 +673,14 @@ const LiveAuctionPage = () => {
                                                 <div style={{ fontSize: '0.9rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '2px' }}>Current Highest Bid</div>
                                                 {(() => {
                                                     const bidVal = activePlayer.current_bid_price || activeAuction.base_price || 0;
-                                                    const bidStr = `₹ ${bidVal.toLocaleString('en-IN')}`;
-                                                    const len = bidStr.length;
-                                                    const fontSz = len > 16 ? '1.8rem' : len > 12 ? '2.4rem' : len > 9 ? '2.9rem' : '3.5rem';
                                                     return (
-                                                        <div style={{ 
-                                                            fontSize: fontSz, 
-                                                            fontWeight: 'bold', 
-                                                            color: 'var(--text-main)', 
-                                                            whiteSpace: 'nowrap', 
-                                                            overflow: 'hidden', 
-                                                            textOverflow: 'ellipsis',
-                                                            lineHeight: 1.2 
-                                                        }}>
-                                                            {bidStr}
+                                                        <div style={{ margin: '0.6rem 0 0.8rem 0' }}>
+                                                            <IndianCurrencyDisplay 
+                                                                amount={bidVal} 
+                                                                size="2xl" 
+                                                                color="var(--text-main)" 
+                                                                subtextColor="var(--accent-gold)" 
+                                                            />
                                                         </div>
                                                     );
                                                 })()}
@@ -938,7 +934,9 @@ const LiveAuctionPage = () => {
                                                             {team?.team_name || 'Unknown Team'}
                                                         </div>
                                                     </td>
-                                                    <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 'bold', color: 'var(--accent-gold)' }}>₹ {p.sold_price?.toLocaleString()}</td>
+                                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                                        <IndianCurrencyDisplay amount={p.sold_price || 0} size="sm" color="var(--accent-gold)" align="right" />
+                                                    </td>
                                                     <td style={{ padding: '1rem', textAlign: 'center' }}>
                                                         <button
                                                             onClick={() => revertPlayer(p)}

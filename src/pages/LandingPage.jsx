@@ -101,9 +101,10 @@ const LandingPage = () => {
           <div className="landing-nav-links">
             <Link to="/" className="landing-nav-link active" onClick={handleClearSelected}>Home</Link>
             <Link to={getNavUrl("/all-players")} className="landing-nav-link">Players</Link>
-            <Link to={getNavUrl("/teams")} className="landing-nav-link">Teams</Link>
+            <Link to={getNavUrl("/team-budget")} className="landing-nav-link">Squad Purses</Link>
             <Link to={getNavUrl("/stats")} className="landing-nav-link">Stats</Link>
             <Link to={getNavUrl("/register")} className="landing-nav-link">Register</Link>
+            <Link to={getNavUrl("/pricing")} className="landing-nav-link">Pricing</Link>
             <Link to={getNavUrl("/admin")} className="landing-nav-cta">
               <Lock size={14} /> Admin Portal
             </Link>
@@ -119,9 +120,10 @@ const LandingPage = () => {
           <div className="landing-mobile-menu">
             <Link to="/" className="landing-nav-link active" onClick={() => { setMobileMenuOpen(false); handleClearSelected(); }}>Home</Link>
             <Link to={getNavUrl("/all-players")} className="landing-nav-link" onClick={() => setMobileMenuOpen(false)}>Players</Link>
-            <Link to={getNavUrl("/teams")} className="landing-nav-link" onClick={() => setMobileMenuOpen(false)}>Teams</Link>
+            <Link to={getNavUrl("/team-budget")} className="landing-nav-link" onClick={() => setMobileMenuOpen(false)}>Squad Purses</Link>
             <Link to={getNavUrl("/stats")} className="landing-nav-link" onClick={() => setMobileMenuOpen(false)}>Stats</Link>
             <Link to={getNavUrl("/register")} className="landing-nav-link" onClick={() => setMobileMenuOpen(false)}>Register</Link>
+            <Link to={getNavUrl("/pricing")} className="landing-nav-link" onClick={() => setMobileMenuOpen(false)}>Pricing</Link>
             <Link to={getNavUrl("/admin")} className="landing-nav-cta" style={{ justifyContent: 'center' }} onClick={() => setMobileMenuOpen(false)}>
               <Lock size={14} /> Admin Portal
             </Link>
@@ -247,8 +249,8 @@ const LandingPage = () => {
                       Enter Live Stadium <Tv size={14} />
                     </Link>
                   )}
-                  <Link to={`/teams?code=${auction.auction_code}`} className="landing-btn-outline" style={{ padding: '0.65rem 1.5rem', fontSize: '0.95rem' }}>
-                    View Squads <Users size={14} />
+                  <Link to={`/team-budget?code=${auction.auction_code}`} className="landing-btn-outline" style={{ padding: '0.65rem 1.5rem', fontSize: '0.95rem' }}>
+                    View Purses & Squads <Users size={14} />
                   </Link>
                   <Link to={`/stats?code=${auction.auction_code}`} className="landing-btn-outline" style={{ padding: '0.65rem 1.5rem', fontSize: '0.95rem', borderColor: 'var(--accent-gold)', color: 'var(--accent-gold)' }}>
                     View Stats <TrendingUp size={14} />
@@ -309,8 +311,8 @@ const LandingPage = () => {
                       </Link>
                     ) : null}
 
-                    <Link to={`/teams?code=${a.auction_code}`} className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', borderRadius: '4px' }}>
-                      Squads
+                    <Link to={`/team-budget?code=${a.auction_code}`} className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', borderRadius: '4px' }}>
+                      Squad Purses
                     </Link>
 
                     <Link to={`/stats?code=${a.auction_code}`} className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', borderRadius: '4px' }}>
@@ -523,9 +525,10 @@ const LandingPage = () => {
 
           <div className="landing-footer-links">
             <Link to={getNavUrl("/all-players")} className="landing-footer-link">Players</Link>
-            <Link to={getNavUrl("/teams")} className="landing-footer-link">Teams</Link>
+            <Link to={getNavUrl("/team-budget")} className="landing-footer-link">Squad Purses</Link>
             <Link to={getNavUrl("/stats")} className="landing-footer-link">Stats</Link>
             <Link to={getNavUrl("/register")} className="landing-footer-link">Register</Link>
+            <Link to={getNavUrl("/pricing")} className="landing-footer-link">Pricing</Link>
             <Link to={getNavUrl("/admin")} className="landing-footer-link">Admin</Link>
           </div>
         </div>

@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { Loader } from '../components/Loader';
 import { getOptimizedImageUrl } from '../services/cloudinary';
+import IndianCurrencyDisplay from '../components/IndianCurrencyDisplay';
+import { formatIndianCurrencyWords } from '../utils/currencyUtils';
 
 const LiveAuctionProjectorPage = () => {
     const [searchParams] = useSearchParams();
@@ -1228,25 +1230,15 @@ const LiveAuctionProjectorPage = () => {
                                 </div>
                                 {(() => {
                                     const bidVal = activePlayer?.current_bid_price || activeAuction?.base_price || 0;
-                                    const bidStr = `₹ ${bidVal.toLocaleString('en-IN')}`;
-                                    const len = bidStr.length;
-                                    let dynamicFontSize = isMobile
-                                        ? (len > 16 ? '1.3rem' : len > 12 ? '1.7rem' : len > 9 ? '2.1rem' : '2.8rem')
-                                        : (len > 18 ? '2.2rem' : len > 14 ? '2.8rem' : len > 11 ? '3.4rem' : len > 8 ? '4.2rem' : '5.5rem');
                                     return (
-                                        <div style={{
-                                            fontSize: dynamicFontSize,
-                                            fontWeight: 900,
-                                            margin: '0 0 clamp(8px, 1.5vh, 20px) 0',
-                                            fontFamily: 'monospace',
-                                            color: winningTeam ? '#39ff14' : '#fff',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            maxWidth: '100%',
-                                            lineHeight: 1.15
-                                        }}>
-                                            {bidStr}
+                                        <div style={{ margin: '0 0 clamp(8px, 1.5vh, 20px) 0' }}>
+                                            <IndianCurrencyDisplay
+                                                amount={bidVal}
+                                                size={isMobile ? 'lg' : '2xl'}
+                                                color={winningTeam ? '#39ff14' : '#fff'}
+                                                subtextColor="rgba(255,215,0,0.9)"
+                                                align="left"
+                                            />
                                         </div>
                                     );
                                 })()}
@@ -1324,7 +1316,7 @@ const LiveAuctionProjectorPage = () => {
                                             color: 'rgba(255, 255, 255, 0.85)',
                                             lineHeight: 1.4,
                                         }}>
-                                            The current bid is <span style={{ color: '#ffd700', fontWeight: 'bold' }}>₹{activePlayer.current_bid_price.toLocaleString()}</span>! 🔥
+                                            The current bid is <span style={{ color: '#ffd700', fontWeight: 'bold' }}>{formatIndianCurrencyWords(activePlayer.current_bid_price || 0)} <span style={{ fontSize: '0.85em', opacity: 0.8 }}>(₹{(activePlayer.current_bid_price || 0).toLocaleString()})</span></span>! 🔥
                                         </div>
                                     </div>
                                     <div style={{ flexShrink: 0 }}>
@@ -1565,20 +1557,6 @@ const LiveAuctionProjectorPage = () => {
                                         </g>
                                     </svg>
                                 </div>
-                                {/* <img
-                                    src="https://media1.tenor.com/m/Q9woRkqECoQAAAAd/strong.gif"
-                                    alt="Strong Celebration"
-                                    style={{
-                                        width: 'clamp(220px, 30vh, 380px)',
-                                        height: 'auto',
-                                        aspectRatio: '1.40351',
-                                        borderRadius: '16px',
-                                        border: '4px solid var(--accent-gold)',
-                                        boxShadow: '0 0 30px rgba(255,215,0,0.4)',
-                                        objectFit: 'cover',
-                                        flexShrink: 0
-                                    }}
-                                /> */}
                             </div>
 
                             {/* Details Card */}
@@ -1655,12 +1633,15 @@ const LiveAuctionProjectorPage = () => {
                                     }}>
                                         {lastSoldPlayer.players.first_name} {lastSoldPlayer.players.last_name}
                                     </div>
-                                    <div style={{
-                                        fontSize: isSmall ? 'clamp(1.1rem, 3.8vh, 1.6rem)' : 'clamp(1.4rem, 4.8vh, 3.2rem)',
-                                        color: '#ffd700', fontWeight: 900,
-                                    }}>
-                                        ₹ {lastSoldPlayer.sold_price.toLocaleString()}
-                                    </div>
+                                    <div style={{ margin: '0.5rem 0' }}>
+                                         <IndianCurrencyDisplay 
+                                             amount={lastSoldPlayer.sold_price || 0} 
+                                             size={isSmall ? 'lg' : 'xl'} 
+                                             color="#ffd700" 
+                                             subtextColor="rgba(255,255,255,0.8)" 
+                                             align="left" 
+                                         />
+                                     </div>
                                     <div style={{
                                         fontSize: isSmall ? 'clamp(0.7rem, 2.2vh, 0.9rem)' : 'clamp(0.8rem, 2.5vh, 1.4rem)',
                                         color: 'rgba(255,255,255,0.6)',

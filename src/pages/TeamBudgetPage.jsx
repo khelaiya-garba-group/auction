@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
 import { LayoutGrid, List } from 'lucide-react';
 import { generateSingleTeamPDF } from '../services/pdfGenerator';
+import IndianCurrencyDisplay from '../components/IndianCurrencyDisplay';
 
 const getTeamInitials = (name) => {
   if (!name) return '';
@@ -227,8 +228,8 @@ const TeamBudgetPage = () => {
                 {/* Back button/selector header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
                     {activeAuction ? (
-                        <Link to={`/teams?code=${activeAuction.auction_code}`} className="btn btn-outline" style={{ fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                            ← View Squad Grid
+                        <Link to={`/all-players?code=${activeAuction.auction_code}`} className="btn btn-outline" style={{ fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                            👥 View Players Pool
                         </Link>
                     ) : (
                         <Link to="/" className="btn btn-outline" style={{ fontSize: '0.9rem' }}>
@@ -315,7 +316,7 @@ const TeamBudgetPage = () => {
                                 </div>
                                 <div>
                                     <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Max Budget</span>
-                                    <span style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>₹{(activeAuction.max_budget || 0).toLocaleString()}</span>
+                                    <IndianCurrencyDisplay amount={activeAuction.max_budget || 0} size="md" color="var(--accent-green)" />
                                 </div>
                             </div>
                         </div>
@@ -390,11 +391,11 @@ const TeamBudgetPage = () => {
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem', background: 'rgba(255,255,255,0.02)', padding: '0.8rem', borderRadius: '8px' }}>
                                                 <div>
                                                     <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Spent</span>
-                                                    <span style={{ fontSize: '1rem', fontWeight: 'bold', color: '#fff' }}>₹{spent.toLocaleString('en-IN')}</span>
+                                                    <IndianCurrencyDisplay amount={spent} size="sm" color="#fff" />
                                                 </div>
                                                 <div>
                                                     <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Remaining</span>
-                                                    <span style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>₹{remaining.toLocaleString('en-IN')}</span>
+                                                    <IndianCurrencyDisplay amount={remaining} size="sm" color="var(--accent-green)" />
                                                 </div>
                                             </div>
 
@@ -469,7 +470,7 @@ const TeamBudgetPage = () => {
                                                             {auctioned.map(p => (
                                                                 <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', alignItems: 'center', color: 'var(--text-main)' }}>
                                                                     <span>{p.players.first_name} {p.players.last_name} <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>({p.players.player_role})</span></span>
-                                                                    <span style={{ fontWeight: 'bold' }}>₹{p.sold_price?.toLocaleString('en-IN')}</span>
+                                                                    <IndianCurrencyDisplay amount={p.sold_price || 0} size="xs" color="var(--accent-green)" align="right" />
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -550,11 +551,11 @@ const TeamBudgetPage = () => {
                                                 <div style={{ display: 'flex', gap: '1.5rem', flex: '0 1 auto', minWidth: '220px' }}>
                                                     <div>
                                                         <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Spent Purse</span>
-                                                        <span style={{ fontSize: '0.95rem', fontWeight: 'bold', color: '#fff' }}>₹{spent.toLocaleString('en-IN')}</span>
+                                                        <IndianCurrencyDisplay amount={spent} size="xs" color="#fff" />
                                                     </div>
                                                     <div>
                                                         <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Remaining Purse</span>
-                                                        <span style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>₹{remaining.toLocaleString('en-IN')}</span>
+                                                        <IndianCurrencyDisplay amount={remaining} size="xs" color="var(--accent-green)" />
                                                     </div>
                                                 </div>
 
@@ -613,7 +614,7 @@ const TeamBudgetPage = () => {
                                                                 {auctioned.map(p => (
                                                                     <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', padding: '0.15rem 0', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
                                                                         <span>{p.players.first_name} {p.players.last_name} <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>({p.players.player_role})</span></span>
-                                                                        <span style={{ fontWeight: 'bold' }}>₹{p.sold_price.toLocaleString()}</span>
+                                                                        <IndianCurrencyDisplay amount={p.sold_price || 0} size="xs" color="var(--accent-green)" align="right" />
                                                                     </div>
                                                                 ))}
                                                             </div>

@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { getOptimizedImageUrl } from './cloudinary';
+import { formatIndianCurrencyWords } from '../utils/currencyUtils';
 
 const getPlayerInitials = (p) => {
   if (!p) return 'P';
@@ -207,11 +208,15 @@ export const generateAllTeamsPDF = async (activeAuction, teams, squads, options 
     const spent = squad.reduce((acc, p) => acc + (p.sold_price || 0), 0);
     const remaining = maxBudget - spent;
 
-    doc.setFontSize(9);
-    doc.setFont(undefined, 'normal');
-    doc.setTextColor(71, 85, 105);
+    const formatPdfCurrency = (val) => {
+      if (!val || val === 0) return 'INR 0';
+      return formatIndianCurrencyWords(val).replace('₹', 'INR ');
+    };
 
-    const statsText = `Purse Spent: INR ${spent.toLocaleString()}  |  Purse Remaining: INR ${remaining.toLocaleString()}  |  Players: ${squad.length}/${activeAuction?.max_players || 11}`;
+    const spentStr = formatPdfCurrency(spent);
+    const remStr = formatPdfCurrency(remaining);
+    const statsText = `Purse Spent: ${spentStr} (${spent.toLocaleString('en-IN')})  |  Purse Remaining: ${remStr} (${remaining.toLocaleString('en-IN')})  |  Players: ${squad.length}/${activeAuction?.max_players || 11}`;
+    doc.setFontSize(8);
     doc.text(statsText, textX, 26);
 
     doc.setDrawColor(226, 232, 240);
@@ -255,6 +260,15 @@ export const generateAllTeamsPDF = async (activeAuction, teams, squads, options 
       else if (p.is_icon) designation = 'Icon';
       else if (p.is_owner) designation = 'Owner';
 
+      let bidPriceCell = '-';
+      if (!p.sold_price && (p.is_icon || p.is_captain || capt || viceCapt)) {
+        bidPriceCell = 'Retained';
+      } else if (p.sold_price) {
+        const words = formatIndianCurrencyWords(p.sold_price).replace('₹', 'INR ');
+        const numStr = `(${p.sold_price.toLocaleString('en-IN')})`;
+        bidPriceCell = `${words}\n${numStr}`;
+      }
+
       return [
         index + 1,
         '',
@@ -262,7 +276,7 @@ export const generateAllTeamsPDF = async (activeAuction, teams, squads, options 
         playerDetails.player_role || '-',
         playerDetails.batting_style || '-',
         playerDetails.bowling_style || '-',
-        (!p.sold_price && (p.is_icon || p.is_captain || capt || viceCapt)) ? 'Retained (₹0)' : `INR ${(p.sold_price || 0).toLocaleString()}`,
+        bidPriceCell,
         designation
       ];
     });
@@ -287,9 +301,9 @@ export const generateAllTeamsPDF = async (activeAuction, teams, squads, options 
       },
       columnStyles: {
         0: { cellWidth: 10, halign: 'center' },
-        1: { cellWidth: 20, halign: 'center' },
-        6: { halign: 'right' },
-        7: { cellWidth: 26, halign: 'center' }
+        1: { cellWidth: 18, halign: 'center' },
+        6: { cellWidth: 32, halign: 'right' },
+        7: { cellWidth: 24, halign: 'center' }
       },
       didDrawCell: (data) => {
         if (data.section === 'body') {
@@ -773,7 +787,8 @@ export const generatePlayerSlidesPDF = async (playersList, filename, activeAucti
     doc.setFont(undefined, 'bold');
     if (p.sold_price) {
       doc.setTextColor(217, 119, 6);
-      doc.text(`SOLD FOR: INR ${p.sold_price.toLocaleString()}`, detailX + 8, detailY + 16);
+      const soldWords = formatIndianCurrencyWords(p.sold_price).replace('₹', 'INR ');
+      doc.text(`SOLD FOR: ${soldWords} (${p.sold_price.toLocaleString('en-IN')})`, detailX + 8, detailY + 16);
     } else if (p.is_captain || p.is_icon || p.is_owner) {
       doc.setTextColor(22, 101, 52);
       const desig = p.is_captain ? '👑 CAPTAIN (RETAINED)' : p.is_icon ? '⭐ ICON PLAYER' : '🛡️ OWNER PLAYER';

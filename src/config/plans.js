@@ -6,8 +6,10 @@
 export const PRICING_CONFIG = {
   currency: 'INR',
   currencySymbol: '₹',
-  contactWhatsAppNumber: '919876543210', // Replace with your support/sales WhatsApp number
-  contactEmail: 'support@cricketauction.com',
+  contactWhatsAppNumber: '917567924142',
+  contactPhone: '7567924142',
+  contactName: 'Ronak Patel',
+  contactEmail: 'ronakpatel@cricketauction.com',
   faq: [
     {
       question: "How does Player Registration work with Public vs Private links?",

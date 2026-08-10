@@ -5,6 +5,7 @@ import { getOptimizedImageUrl } from '../services/cloudinary';
 import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
 import EmptyState from '../components/EmptyState';
+import IndianCurrencyDisplay from '../components/IndianCurrencyDisplay';
 
 const getTeamInitials = (name) => {
   if (!name) return '';
@@ -251,8 +252,8 @@ const StatsPage = () => {
                     </button>
 
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: '1rem' }}>
-                        <a href="#/all-players" className="btn btn-outline" style={{ padding: '0.6rem 1rem', fontSize: '0.9rem' }}>Registered Players</a>
-                        <a href="#/teams" className="btn btn-outline" style={{ padding: '0.6rem 1rem', fontSize: '0.9rem' }}>Squads</a>
+                        <Link to={activeAuction?.auction_code ? `/all-players?code=${activeAuction.auction_code}` : '/all-players'} className="btn btn-outline" style={{ padding: '0.6rem 1rem', fontSize: '0.9rem' }}>Registered Players</Link>
+                        <Link to={activeAuction?.auction_code ? `/team-budget?code=${activeAuction.auction_code}` : '/team-budget'} className="btn btn-outline" style={{ padding: '0.6rem 1rem', fontSize: '0.9rem' }}>Squad Purses</Link>
                     </div>
                 </div>
 
@@ -377,8 +378,8 @@ const StatsPage = () => {
                                             </div>
 
                                             {/* Price */}
-                                            <div style={{ color: 'var(--accent-green)', fontSize: '2.2rem', fontWeight: 'bold', fontFamily: 'var(--font-heading)', marginTop: '0.4rem', textShadow: p ? '0 0 10px rgba(57,255,20,0.3)' : 'none' }}>
-                                                {p ? formatPriceCompact(price) : '-'}
+                                            <div style={{ marginTop: '0.4rem' }}>
+                                                {p ? <IndianCurrencyDisplay amount={price} size="lg" color="var(--accent-green)" align="center" /> : '-'}
                                             </div>
                                         </div>
                                     </div>
@@ -487,8 +488,8 @@ const StatsPage = () => {
                                                             </span>
                                                         )}
                                                     </td>
-                                                    <td style={{ padding: '1rem', textAlign: 'right', fontWeight: 'bold', fontSize: '1.1rem', color: isSold ? 'var(--accent-green)' : 'var(--text-muted)' }}>
-                                                        {isSold ? `₹${p.sold_price?.toLocaleString()}` : '-'}
+                                                    <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                                        {isSold ? <IndianCurrencyDisplay amount={p.sold_price || 0} size="sm" color="var(--accent-green)" align="right" /> : '-'}
                                                     </td>
                                                 </tr>
                                             );

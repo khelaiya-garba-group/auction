@@ -6,6 +6,8 @@ import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { getOptimizedImageUrl } from '../services/cloudinary';
 import { generateAllTeamsPDF, generateSingleTeamPDF, generateVendorTshirtPDF, generateSingleTeamTshirtPDF } from '../services/pdfGenerator';
 import { Download, LayoutGrid, List, User } from 'lucide-react';
+import IndianCurrencyDisplay from '../components/IndianCurrencyDisplay';
+import { formatIndianCurrencyWords } from '../utils/currencyUtils';
 
 const getTeamInitials = (name) => {
   if (!name) return '';
@@ -575,7 +577,7 @@ const TeamDetailsPage = () => {
                         </div>
                         <div>
                             <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Max Budget</span>
-                            <span style={{ fontSize: '1.4rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>₹{(activeAuction.max_budget || 0).toLocaleString('en-IN')}</span>
+                            <IndianCurrencyDisplay amount={activeAuction.max_budget || 0} size="sm" color="var(--accent-green)" />
                         </div>
                         <div>
                             <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Max Players</span>
@@ -667,15 +669,15 @@ const TeamDetailsPage = () => {
 
                                     {/* Financial Stats Row */}
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem', background: 'rgba(255,255,255,0.02)', padding: '0.8rem', borderRadius: '8px' }}>
-                                        <div>
-                                            <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Spent</span>
-                                            <span style={{ fontSize: '1rem', fontWeight: 'bold', color: '#fff' }}>₹{teamSpent.toLocaleString('en-IN')}</span>
-                                        </div>
-                                        <div>
-                                            <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Remaining</span>
-                                            <span style={{ fontSize: '1rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>₹{teamRemaining.toLocaleString('en-IN')}</span>
-                                        </div>
-                                    </div>
+                                         <div>
+                                             <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Spent</span>
+                                             <IndianCurrencyDisplay amount={teamSpent} size="sm" color="#fff" />
+                                         </div>
+                                         <div>
+                                             <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Remaining</span>
+                                             <IndianCurrencyDisplay amount={teamRemaining} size="sm" color="var(--accent-green)" />
+                                         </div>
+                                     </div>
 
                                     {/* Badges */}
                                     <div style={{ display: 'flex', gap: '0.35rem', marginBottom: '1.2rem', flexWrap: 'wrap' }}>
@@ -783,10 +785,10 @@ const TeamDetailsPage = () => {
                                                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No players bought yet</span>
                                                 ) : (
                                                     auctionedPlayers.map(p => (
-                                                        <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-main)', padding: '0.15rem 0' }}>
-                                                            <span>{p.name} <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>({p.role})</span></span>
-                                                            <span style={{ color: 'var(--accent-green)', fontWeight: 'bold' }}>₹{p.price.toLocaleString('en-IN')}</span>
-                                                        </div>
+                                                        <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-main)', padding: '0.15rem 0', alignItems: 'center' }}>
+                                                             <span>{p.name} <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>({p.role})</span></span>
+                                                             <IndianCurrencyDisplay amount={p.price || 0} size="xs" color="var(--accent-green)" align="right" />
+                                                         </div>
                                                     ))
                                                 )}
                                             </div>
@@ -878,15 +880,15 @@ const TeamDetailsPage = () => {
 
                                         {/* Financial Stats Details */}
                                         <div style={{ display: 'flex', gap: '1.5rem', flex: '0 1 auto', minWidth: '220px' }}>
-                                            <div>
-                                                <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Spent Purse</span>
-                                                <span style={{ fontSize: '0.95rem', fontWeight: 'bold', color: '#fff' }}>₹{teamSpent.toLocaleString('en-IN')}</span>
-                                            </div>
-                                            <div>
-                                                <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Remaining Purse</span>
-                                                <span style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>₹{teamRemaining.toLocaleString('en-IN')}</span>
-                                            </div>
-                                        </div>
+                                             <div>
+                                                 <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Spent Purse</span>
+                                                 <IndianCurrencyDisplay amount={teamSpent} size="xs" color="#fff" />
+                                             </div>
+                                             <div>
+                                                 <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Remaining Purse</span>
+                                                 <IndianCurrencyDisplay amount={teamRemaining} size="xs" color="var(--accent-green)" />
+                                             </div>
+                                         </div>
 
                                         {/* Action Buttons */}
                                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -1049,9 +1051,9 @@ const TeamDetailsPage = () => {
                                                         <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{squad.length} Players</span>
                                                     </div>
                                                     <div>
-                                                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>PURSE SPENT</span>
-                                                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>₹{spent.toLocaleString()}</span>
-                                                    </div>
+                                                         <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'block' }}>PURSE SPENT</span>
+                                                         <IndianCurrencyDisplay amount={spent} size="md" color="#fff" />
+                                                     </div>
                                                     <div>
                                                         <span style={{ color: 'var(--accent-gold)', fontSize: '0.8rem', display: 'block', fontWeight: 'bold' }}>👑 CAPTAIN</span>
                                                         <span style={{ fontSize: '1rem', fontWeight: 'bold' }}>
@@ -1082,10 +1084,10 @@ const TeamDetailsPage = () => {
                                                 <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
                                                     <div style={{ width: `${percentSpent}%`, height: '100%', background: percentSpent > 85 ? '#ef4444' : percentSpent > 60 ? '#f59e0b' : 'var(--accent-green)', borderRadius: '10px' }}></div>
                                                 </div>
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.8rem', fontSize: '0.8rem' }}>
-                                                    <span style={{ color: 'var(--text-muted)' }}>Spent: ₹{spent.toLocaleString()}</span>
-                                                    <span style={{ color: 'var(--accent-green)', fontWeight: 'bold' }}>Rem: ₹{remaining.toLocaleString()}</span>
-                                                </div>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.8rem', fontSize: '0.8rem', alignItems: 'center' }}>
+                                                     <IndianCurrencyDisplay amount={spent} size="xs" color="var(--text-muted)" />
+                                                     <IndianCurrencyDisplay amount={remaining} size="xs" color="var(--accent-green)" align="right" />
+                                                 </div>
                                             </div>
 
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem' }}>
