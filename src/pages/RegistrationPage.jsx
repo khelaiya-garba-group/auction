@@ -325,20 +325,20 @@ const RegistrationPage = () => {
         <main className="container flex-col items-center justify-center text-center" style={{ flex: 1, padding: '4rem 1rem' }}>
           <div className="glass-panel" style={{ padding: '3rem 2rem', maxWidth: '600px', width: '100%', margin: '0 auto', border: '1px solid rgba(255, 68, 68, 0.3)' }}>
             {activeAuction && activeAuction.auction_logo ? (
-              <img 
-                src={activeAuction.auction_logo} 
-                alt="Auction Logo" 
-                style={{ 
-                  width: '90px', 
-                  height: '90px', 
-                  borderRadius: '12px', 
-                  objectFit: 'contain', 
-                  background: '#fff', 
-                  padding: '6px', 
-                  margin: '0 auto 1.5rem', 
+              <img
+                src={activeAuction.auction_logo}
+                alt="Auction Logo"
+                style={{
+                  width: '90px',
+                  height: '90px',
+                  borderRadius: '12px',
+                  objectFit: 'contain',
+                  background: '#fff',
+                  padding: '6px',
+                  margin: '0 auto 1.5rem',
                   border: '2px solid rgba(255, 68, 68, 0.4)',
                   boxShadow: '0 0 15px rgba(255, 68, 68, 0.2)'
-                }} 
+                }}
               />
             ) : (
               <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>🔒</div>
@@ -361,20 +361,20 @@ const RegistrationPage = () => {
         <main className="container flex-col items-center justify-center text-center" style={{ flex: 1, padding: '4rem 1rem' }}>
           <div className="glass-panel" style={{ padding: '3rem 2rem', maxWidth: '600px', width: '100%', margin: '0 auto', border: '1px solid rgba(255, 68, 68, 0.3)' }}>
             {activeAuction && activeAuction.auction_logo ? (
-              <img 
-                src={activeAuction.auction_logo} 
-                alt="Auction Logo" 
-                style={{ 
-                  width: '90px', 
-                  height: '90px', 
-                  borderRadius: '12px', 
-                  objectFit: 'contain', 
-                  background: '#fff', 
-                  padding: '6px', 
-                  margin: '0 auto 1.5rem', 
+              <img
+                src={activeAuction.auction_logo}
+                alt="Auction Logo"
+                style={{
+                  width: '90px',
+                  height: '90px',
+                  borderRadius: '12px',
+                  objectFit: 'contain',
+                  background: '#fff',
+                  padding: '6px',
+                  margin: '0 auto 1.5rem',
                   border: '2px solid rgba(255, 68, 68, 0.4)',
                   boxShadow: '0 0 15px rgba(255, 68, 68, 0.2)'
-                }} 
+                }}
               />
             ) : (
               <div style={{ fontSize: '4rem', marginBottom: '1.5rem' }}>⚠️</div>
@@ -397,20 +397,20 @@ const RegistrationPage = () => {
         <main className="container flex-col items-center justify-center text-center" style={{ flex: 1, padding: '4rem 1rem' }}>
           <div className="glass-panel" style={{ padding: '3rem 2rem', maxWidth: '600px', width: '100%', margin: '0 auto', border: '1px solid var(--accent-gold)' }}>
             {activeAuction && activeAuction.auction_logo ? (
-              <img 
-                src={activeAuction.auction_logo} 
-                alt="Auction Logo" 
-                style={{ 
-                  width: '95px', 
-                  height: '95px', 
-                  borderRadius: '12px', 
-                  objectFit: 'contain', 
-                  background: '#fff', 
-                  padding: '6px', 
-                  margin: '0 auto 1.5rem', 
+              <img
+                src={activeAuction.auction_logo}
+                alt="Auction Logo"
+                style={{
+                  width: '95px',
+                  height: '95px',
+                  borderRadius: '12px',
+                  objectFit: 'contain',
+                  background: '#fff',
+                  padding: '6px',
+                  margin: '0 auto 1.5rem',
                   border: '2px solid var(--accent-gold)',
                   boxShadow: '0 0 15px rgba(255, 215, 0, 0.2)'
-                }} 
+                }}
               />
             ) : (
               <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#000', fontSize: '2.5rem', fontWeight: 'bold' }}>
@@ -475,7 +475,7 @@ const RegistrationPage = () => {
         <div className="spotlight"></div>
         <PageHeader title="Player Registration" showLogos={false} />
         <main className="container flex-col items-center justify-center text-center" style={{ flex: 1, padding: '3rem 1rem', zIndex: 1, position: 'relative' }}>
-          
+
           {publicAuctionsList.length > 0 ? (
             <div style={{ maxWidth: '650px', width: '100%', margin: '0 auto 2rem' }}>
               <div className="glass-panel" style={{ padding: '2rem', marginBottom: '2rem' }}>
@@ -487,9 +487,9 @@ const RegistrationPage = () => {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {publicAuctionsList.map(a => (
-                    <div 
-                      key={a.id} 
-                      style={{ 
+                    <div
+                      key={a.id}
+                      style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem',
                         background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--glass-border)', padding: '1rem 1.25rem', borderRadius: '8px',
                         textAlign: 'left'
@@ -511,8 +511,8 @@ const RegistrationPage = () => {
                         </div>
                       </div>
 
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => {
                           setSearchParams({ code: a.auction_code });
                           setActiveAuction(a);
@@ -617,13 +617,13 @@ const RegistrationPage = () => {
               </div>
               <div className="form-group">
                 <label className="form-label">Mobile Number *</label>
-                <input 
-                  required 
-                  type="tel" 
-                  name="mobile" 
-                  className="form-input" 
-                  value={formData.mobile} 
-                  onChange={handleChange} 
+                <input
+                  required
+                  type="tel"
+                  name="mobile"
+                  className="form-input"
+                  value={formData.mobile}
+                  onChange={handleChange}
                   readOnly={!!searchParams.get('invite')}
                   style={searchParams.get('invite') ? { backgroundColor: 'rgba(255,255,255,0.05)', cursor: 'not-allowed', color: 'var(--text-muted)' } : {}}
                 />
@@ -732,10 +732,13 @@ const RegistrationPage = () => {
                   {activeAuction.per_player_fees && (
                     <>
                       <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent-green)', marginBottom: '1.5rem' }}>
+                        Registration Fee for Captain: ₹700
+                      </div>
+                      <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent-green)', marginBottom: '1.5rem' }}>
                         Registration Fee for Male: ₹{activeAuction.per_player_fees}
                       </div>
                       <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent-green)', marginBottom: '1.5rem' }}>
-                        Registration Fee for Female: ₹500
+                        Registration Fee for Female: ₹300
                       </div>
                       {/* <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent-green)', marginBottom: '1.5rem' }}>
                         Registration Fee for Icon Player : ₹{500}
