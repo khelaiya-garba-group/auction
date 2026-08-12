@@ -221,6 +221,11 @@ const PlayerProfilePage = () => {
               </div>
 
               <div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.4rem' }}>Branch</div>
+                <div style={{ fontSize: isMobile ? '1.3rem' : '1.6rem', fontWeight: 600, color: 'var(--accent-gold)' }}>{player.branch || 'N/A'}</div>
+              </div>
+
+              <div>
                 <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.4rem' }}>Area / Village / City</div>
                 <div style={{ fontSize: isMobile ? '1.3rem' : '1.6rem', fontWeight: 600, color: 'var(--text-main)' }}>{player.area || 'N/A'}</div>
               </div>

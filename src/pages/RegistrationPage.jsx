@@ -24,7 +24,7 @@ const RegistrationPage = () => {
   const [linkExpired, setLinkExpired] = useState(false);
 
   const [formData, setFormData] = useState({
-    first_name: '', last_name: '', mobile: '', email: '',
+    branch: '', first_name: '', last_name: '', mobile: '', email: '',
     dob: '', area: '', gender: '',
     player_role: '', batting_style: '', bowling_style: '',
     tshirt_name: '', tshirt_size: '', tshirt_number: '',
@@ -231,6 +231,10 @@ const RegistrationPage = () => {
         }
       }
 
+      if (!formData.branch) {
+        throw new Error("Branch selection is required.");
+      }
+
       if (!formData.photo) {
         throw new Error("Player Photo is required.");
       }
@@ -243,6 +247,7 @@ const RegistrationPage = () => {
       if (formData.aadhar) aadhar_card_url = await uploadToCloudinary(formData.aadhar);
 
       const playerPayload = {
+        branch: formData.branch,
         first_name: formData.first_name,
         last_name: formData.last_name,
         mobile: finalMobile,
@@ -592,6 +597,16 @@ const RegistrationPage = () => {
           <form onSubmit={handleSubmit}>
             <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', marginBottom: '1.5rem', color: 'var(--accent-gold)' }}>Personal Details</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem 1.5rem' }}>
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <label className="form-label">Branch *</label>
+                <select required name="branch" className="form-select" value={formData.branch} onChange={handleChange}>
+                  <option value="">Select Branch</option>
+                  <option value="Branch 1">Branch 1</option>
+                  <option value="Branch 2">Branch 2</option>
+                  <option value="Branch 3">Branch 3</option>
+                  <option value="Branch 4">Branch 4</option>
+                </select>
+              </div>
               <div className="form-group">
                 <label className="form-label">First Name *</label>
                 <input required type="text" name="first_name" className="form-input" value={formData.first_name} onChange={handleChange} />
