@@ -1,6 +1,6 @@
 # 💡 Feature Ideas & Future Roadmap
 
-A collection of feature ideas and enhancement concepts for the **Malang Cricket Auction Engine**. You can reference this document anytime to plan future updates.
+A collection of feature ideas and enhancement concepts for the **Cricket Auction Engine**. You can reference this document anytime to plan future updates.
 
 ---
 
