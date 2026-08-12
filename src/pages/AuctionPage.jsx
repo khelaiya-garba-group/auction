@@ -42,7 +42,9 @@ const AuctionPage = () => {
     max_budget: '',
     max_players: '',
     registration_type: 'private',
-    ask_tshirt_details: false
+    ask_tshirt_details: false,
+    youtube_live_url: '',
+    is_live_streaming: false
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -96,6 +98,8 @@ const AuctionPage = () => {
       max_players: auction.max_players || '',
       registration_type: auction.registration_type || 'private',
       ask_tshirt_details: auction.ask_tshirt_details || false,
+      youtube_live_url: auction.youtube_live_url || '',
+      is_live_streaming: auction.is_live_streaming || false,
       logo: null, // Don't reload file objects
       qr_code: null
     });
@@ -148,6 +152,8 @@ const AuctionPage = () => {
         status: formData.status,
         registration_type: formData.registration_type || 'private',
         ask_tshirt_details: !!formData.ask_tshirt_details,
+        youtube_live_url: formData.youtube_live_url || null,
+        is_live_streaming: !!formData.is_live_streaming,
         per_player_fees: formData.per_player_fees ? parseFloat(formData.per_player_fees) : null,
         number_of_teams: formData.number_of_teams ? parseInt(formData.number_of_teams, 10) : null,
         number_of_icon: formData.number_of_icon ? parseInt(formData.number_of_icon, 10) : null,
@@ -284,6 +290,17 @@ const AuctionPage = () => {
                 <select required name="ask_tshirt_details" value={formData.ask_tshirt_details ? "true" : "false"} onChange={(e) => setFormData(prev => ({ ...prev, ask_tshirt_details: e.target.value === "true" }))} className="form-select">
                   <option value="false">Disabled (Do not ask T-Shirt details)</option>
                   <option value="true">Enabled (Ask Name, Size & Number)</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">YouTube Live Stream URL / Video ID</label>
+                <input type="text" name="youtube_live_url" value={formData.youtube_live_url} onChange={handleChange} className="form-input" placeholder="e.g. https://youtube.com/watch?v=..." />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Enable YouTube Embed on Website</label>
+                <select name="is_live_streaming" value={formData.is_live_streaming ? "true" : "false"} onChange={(e) => setFormData(prev => ({ ...prev, is_live_streaming: e.target.value === "true" }))} className="form-select">
+                  <option value="false">Disabled</option>
+                  <option value="true">Enabled (Show Watch Live Stream on Homepage)</option>
                 </select>
               </div>
               <div className="form-group">

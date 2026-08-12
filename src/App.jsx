@@ -31,6 +31,8 @@ const AdminSponsorsPage = React.lazy(() => import('./pages/AdminSponsorsPage'));
 const AdminOwnersPage = React.lazy(() => import('./pages/AdminOwnersPage'));
 const RandomDrawPage = React.lazy(() => import('./pages/RandomDrawPage'));
 const PricingPage = React.lazy(() => import('./pages/PricingPage'));
+const StreamSetupPage = React.lazy(() => import('./pages/StreamSetupPage'));
+const OBSOverlayPage = React.lazy(() => import('./pages/OBSOverlayPage'));
 
 function App() {
   return (
@@ -41,6 +43,8 @@ function App() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/register" element={<RegistrationPage />} />
           <Route path="/live-auction-projector" element={<LiveAuctionProjectorPage />} />
+          <Route path="/obs-overlay" element={<OBSOverlayPage />} />
+          <Route path="/stream-setup" element={<StreamSetupPage />} />
           <Route path="/all-players" element={<PublicPlayersPage />} />
           <Route path="/team-budget" element={<TeamBudgetPage />} />
           <Route path="/stats" element={<StatsPage />} />

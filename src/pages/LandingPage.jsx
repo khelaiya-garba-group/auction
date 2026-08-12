@@ -15,9 +15,23 @@ import {
   Lock,
   Menu,
   X,
-  Search
+  Search,
+  Play
 } from 'lucide-react';
 import heroImg from '../assets/hero.png';
+
+const getYouTubeEmbedUrl = (urlOrId) => {
+  if (!urlOrId) return null;
+  let videoId = urlOrId.trim();
+  if (videoId.includes('youtube.com/watch?v=')) {
+    videoId = videoId.split('v=')[1]?.split('&')[0];
+  } else if (videoId.includes('youtu.be/')) {
+    videoId = videoId.split('youtu.be/')[1]?.split('?')[0];
+  } else if (videoId.includes('youtube.com/embed/')) {
+    videoId = videoId.split('embed/')[1]?.split('?')[0];
+  }
+  return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : null;
+};
 
 const LandingPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -29,6 +43,7 @@ const LandingPage = () => {
   const [allAuctions, setAllAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLiveStreamModal, setShowLiveStreamModal] = useState(false);
 
   useEffect(() => {
     const fetchAuctions = async () => {
@@ -150,6 +165,15 @@ const LandingPage = () => {
             <Link to={getNavUrl("/live-auction-projector")} className="landing-btn-outline">
               Live Projector View <Tv size={16} />
             </Link>
+            {auction?.is_live_streaming && auction?.youtube_live_url && (
+              <button 
+                onClick={() => setShowLiveStreamModal(true)}
+                className="landing-btn-glow" 
+                style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)', color: '#fff' }}
+              >
+                🔴 Watch Live Stream <Play size={16} />
+              </button>
+            )}
           </div>
 
           <div className="landing-hero-stats">
@@ -514,6 +538,60 @@ const LandingPage = () => {
           </a>
         </div>
       </section>
+
+      {/* YouTube Live Stream Modal */}
+      {showLiveStreamModal && auction?.youtube_live_url && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(12px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem',
+          zIndex: 9999
+        }}>
+          <div style={{
+            background: '#0f172a',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: '20px',
+            width: '100%',
+            maxWidth: '900px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.9)'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '1rem 1.5rem',
+              background: '#1e293b',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ef4444', fontWeight: 800 }}>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#ef4444' }} />
+                <span>🔴 LIVE STREAM: {auction.auction_name}</span>
+              </div>
+              <button 
+                onClick={() => setShowLiveStreamModal(false)}
+                style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '0.4rem 1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+              >
+                Close ✕
+              </button>
+            </div>
+            <div style={{ position: 'relative', width: '100%', aspectRatio: '16/9', background: '#000' }}>
+              <iframe
+                src={getYouTubeEmbedUrl(auction.youtube_live_url)}
+                title="YouTube Live Stream"
+                style={{ width: '100%', height: '100%', border: 0 }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       <footer className="landing-footer">
