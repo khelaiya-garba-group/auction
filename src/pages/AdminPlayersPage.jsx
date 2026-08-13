@@ -5,7 +5,7 @@ import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { normalizeMobile, formatMobile } from '../utils/phoneUtils';
-import { tshirtSizes } from '../data/data';
+import { tshirtSizes, branches } from '../data/data';
 
 const getPlayerInitials = (p) => {
   if (!p) return '';
@@ -695,10 +695,9 @@ const AdminPlayersPage = () => {
                   <label className="form-label">Branch *</label>
                   <select required name="branch" value={formData.branch} onChange={handleFormChange} className="form-select">
                     <option value="">Select Branch</option>
-                    <option value="Branch 1">Branch 1</option>
-                    <option value="Branch 2">Branch 2</option>
-                    <option value="Branch 3">Branch 3</option>
-                    <option value="Branch 4">Branch 4</option>
+                    {branches.map(b => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-group">

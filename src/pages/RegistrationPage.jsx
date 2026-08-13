@@ -5,7 +5,7 @@ import { uploadToCloudinary } from '../services/cloudinary';
 import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
 import { normalizeMobile } from '../utils/phoneUtils';
-import { tshirtSizes } from '../data/data';
+import { tshirtSizes, branches } from '../data/data';
 
 const RegistrationPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -601,10 +601,9 @@ const RegistrationPage = () => {
                 <label className="form-label">Branch *</label>
                 <select required name="branch" className="form-select" value={formData.branch} onChange={handleChange}>
                   <option value="">Select Branch</option>
-                  <option value="Branch 1">Branch 1</option>
-                  <option value="Branch 2">Branch 2</option>
-                  <option value="Branch 3">Branch 3</option>
-                  <option value="Branch 4">Branch 4</option>
+                  {branches.map(b => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
                 </select>
               </div>
               <div className="form-group">
