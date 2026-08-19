@@ -731,7 +731,7 @@ const LiveAuctionPage = () => {
                                                 <img
                                                     src={getOptimizedImageUrl(activePlayer.players.photo_url, 500)}
                                                     alt="Player"
-                                                    style={{ width: 180, height: 220, objectFit: 'cover', borderRadius: '15px', border: '4px solid var(--accent-gold)', boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
+                                                    style={{ width: 180, height: 220, objectFit: 'cover', objectPosition: 'top center', borderRadius: '15px', border: '4px solid var(--accent-gold)', boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}
                                                 />
                                             ) : (
                                                 <div style={{ width: 180, height: 220, borderRadius: '15px', border: '4px solid var(--accent-gold)', background: 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(0,0,0,0.4))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', fontWeight: 900, color: 'var(--accent-gold)', boxShadow: '0 0 30px rgba(255,215,0,0.3)' }}>

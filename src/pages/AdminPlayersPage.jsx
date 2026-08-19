@@ -6,6 +6,7 @@ import { Loader } from '../components/Loader';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { normalizeMobile, formatMobile } from '../utils/phoneUtils';
 import { tshirtSizes, branches } from '../data/data';
+import { generatePlayersListPDF } from '../services/pdfGenerator';
 
 const getPlayerInitials = (p) => {
   if (!p) return '';
@@ -569,6 +570,29 @@ const AdminPlayersPage = () => {
     }
   };
 
+  const handleDownloadGenderPDF = async (gender = 'all') => {
+    if (!activeAuction || playersList.length === 0) return alert('No players available to export PDF.');
+    setActionLoading(true);
+    try {
+      let list = playersList.filter(p => p.approval_status === 'approved');
+      if (gender !== 'all') {
+        list = list.filter(p => (p.gender || '').toLowerCase() === gender.toLowerCase());
+      }
+      if (list.length === 0) {
+        alert(`No approved ${gender !== 'all' ? gender : ''} players found.`);
+        return;
+      }
+      const tag = gender !== 'all' ? `${gender}_` : '';
+      const title = gender !== 'all' ? `Approved ${gender} Players List (${list.length})` : `Approved Players List (${list.length})`;
+      await generatePlayersListPDF(list, `Approved_${tag}Players_${activeAuction.auction_name.replace(/ /g, '_')}.pdf`, activeAuction, 'none', { subTitle: title });
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      alert("Failed to generate PDF: " + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const duplicateInfoMap = useMemo(() => {
     const mobileGroups = new Map();
 
@@ -700,6 +724,8 @@ const AdminPlayersPage = () => {
               </button>
             )}
             <Link to="/players" className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>View Players List</Link>
+            <button onClick={() => handleDownloadGenderPDF('Male')} disabled={actionLoading} className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', color: '#60a5fa', borderColor: 'rgba(59,130,246,0.5)' }} title="Download Approved Male Players PDF">♂ Male PDF</button>
+            <button onClick={() => handleDownloadGenderPDF('Female')} disabled={actionLoading} className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', color: '#f472b6', borderColor: 'rgba(236,72,153,0.5)' }} title="Download Approved Female Players PDF">♀ Female PDF</button>
             <Link to="/admin" className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Admin</Link>
             <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', color: '#ff4444', borderColor: '#ff4444' }}>Logout</button>
           </div>
@@ -1002,7 +1028,7 @@ const AdminPlayersPage = () => {
                         </td>
                         <td style={{ padding: '1rem' }}>
                           {p.photo_url ? (
-                            <img src={getOptimizedImageUrl(p.photo_url, 100)} alt="Player" style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }} />
+                            <img src={getOptimizedImageUrl(p.photo_url, 100)} alt="Player" style={{ width: 50, height: 50, objectFit: 'cover', objectPosition: 'top center', borderRadius: '4px' }} />
                           ) : (
                             <div style={{ width: 50, height: 50, borderRadius: '4px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', color: '#fff' }}>
                               {getPlayerInitials(p)}

@@ -27,14 +27,23 @@ const PlayersPage = () => {
   });
 
   const [pdfGroup, setPdfGroup] = useState('none');
+  const [pdfGender, setPdfGender] = useState('all');
   const [downloadingAll, setDownloadingAll] = useState(false);
   const [downloadingSlides, setDownloadingSlides] = useState(false);
 
   const handleDownloadSlidesPDF = async () => {
-    if (!players || players.length === 0) return;
+    let dataToExport = [...players];
+    if (pdfGender !== 'all') {
+      dataToExport = dataToExport.filter(p => (p.gender || '').toLowerCase() === pdfGender.toLowerCase());
+    }
+    if (!dataToExport || dataToExport.length === 0) {
+      alert(`No ${pdfGender} players available to generate slides PDF.`);
+      return;
+    }
     setDownloadingSlides(true);
     try {
-      await generatePlayerSlidesPDF(players, `Player_Slides_${activeAuction?.auction_name?.replace(/ /g, '_') || 'Catalog'}.pdf`, activeAuction);
+      const genderTag = pdfGender !== 'all' ? `${pdfGender}_` : '';
+      await generatePlayerSlidesPDF(dataToExport, `${genderTag}Player_Slides_${activeAuction?.auction_name?.replace(/ /g, '_') || 'Catalog'}.pdf`, activeAuction);
     } catch (err) {
       console.error("Error generating slides PDF:", err);
       alert("Failed to download slides PDF.");
@@ -44,6 +53,7 @@ const PlayersPage = () => {
   };
 
   const filterOptions = {
+    gender: ['Male', 'Female'],
     player_role: ['Batter', 'Bowler', 'All Rounder', 'Wicket Keeper'],
     batting_style: ['Right Hand', 'Left Hand'],
     bowling_style: ['Right Arm Fast', 'Right Arm Medium', 'Right Arm Spin', 'Left Arm Fast', 'Left Arm Spin', 'None']
@@ -143,12 +153,23 @@ const PlayersPage = () => {
     window.location.reload();
   };
 
-  const generatePDF = async (dataToExport, filename) => {
-    await generatePlayersListPDF(dataToExport, filename, activeAuction, pdfGroup);
+  const generatePDF = async (dataToExport, filename, customSubTitle) => {
+    let list = [...dataToExport];
+    if (pdfGender !== 'all') {
+      list = list.filter(p => (p.gender || '').toLowerCase() === pdfGender.toLowerCase());
+    }
+    if (list.length === 0) {
+      alert(`No ${pdfGender !== 'all' ? pdfGender : ''} players found for PDF export.`);
+      return;
+    }
+    const subTitle = customSubTitle || (pdfGender !== 'all' ? `${pdfGender} Players List (${list.length})` : `Players List (${list.length})`);
+    await generatePlayersListPDF(list, filename, activeAuction, pdfGroup, { subTitle });
   };
 
   const handleDownloadPDF = async () => {
-    await generatePDF(players, `Approved_Players_${activeAuction?.auction_name?.replace(/ /g, '_') || 'List'}.pdf`);
+    const genderTag = pdfGender !== 'all' ? `${pdfGender}_` : '';
+    const subTitle = pdfGender !== 'all' ? `Approved ${pdfGender} Players List` : 'Approved Players List';
+    await generatePDF(players, `Approved_${genderTag}Players_${activeAuction?.auction_name?.replace(/ /g, '_') || 'List'}.pdf`, subTitle);
   };
 
   const handleDownloadAllPDF = async () => {
@@ -192,7 +213,9 @@ const PlayersPage = () => {
         }));
       }
 
-      await generatePDF(allPlayersToExport, `All_Registered_Players_${activeAuction?.auction_name?.replace(/ /g, '_') || 'List'}.pdf`);
+      const genderTag = pdfGender !== 'all' ? `${pdfGender}_` : '';
+      const subTitle = pdfGender !== 'all' ? `All Registered ${pdfGender} Players List` : 'All Registered Players List';
+      await generatePDF(allPlayersToExport, `All_Registered_${genderTag}Players_${activeAuction?.auction_name?.replace(/ /g, '_') || 'List'}.pdf`, subTitle);
     } catch (error) {
       console.error("Error fetching all players for PDF:", error);
       alert("Failed to download all players PDF.");
@@ -208,6 +231,8 @@ const PlayersPage = () => {
   const startIndex = (currentPage - 1) * playersPerPage;
   const paginatedPlayers = filteredPlayers.slice(startIndex, startIndex + playersPerPage);
 
+  const genderLabel = pdfGender === 'Male' ? 'Male ' : pdfGender === 'Female' ? 'Female ' : '';
+
   return (
     <div className="flex-col min-h-screen">
       <div className="spotlight"></div>
@@ -221,23 +246,36 @@ const PlayersPage = () => {
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginRight: 'auto', flexWrap: 'wrap' }}>
             <select
+              value={pdfGender}
+              onChange={(e) => setPdfGender(e.target.value)}
+              className="input"
+              style={{ padding: '0.45rem', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-dark)', color: 'var(--text-main)', fontSize: '0.9rem', outline: 'none' }}
+              title="Filter PDF exports by Gender"
+            >
+              <option value="all">🚻 All Genders</option>
+              <option value="Male">♂ Male Only</option>
+              <option value="Female">♀ Female Only</option>
+            </select>
+
+            <select
               value={pdfGroup}
               onChange={(e) => setPdfGroup(e.target.value)}
               className="input"
               style={{ padding: '0.45rem', border: '1px solid var(--border-color)', borderRadius: '4px', backgroundColor: 'var(--bg-dark)', color: 'var(--text-main)', fontSize: '0.9rem', outline: 'none' }}
             >
               <option value="none">No Grouping</option>
+              <option value="gender">Group by Gender</option>
               <option value="area">Group by Area</option>
               <option value="role">Group by Role</option>
             </select>
             <button onClick={handleDownloadPDF} className="btn" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', backgroundColor: 'var(--accent-gold)', color: '#000', fontWeight: 'bold' }}>
-              Download Approved Players PDF
+              Download Approved {genderLabel}PDF
             </button>
             <button onClick={handleDownloadAllPDF} disabled={downloadingAll} className="btn" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', backgroundColor: 'var(--accent-green)', color: '#000', fontWeight: 'bold' }}>
-              {downloadingAll ? 'Downloading...' : 'Download All Registered Players PDF'}
+              {downloadingAll ? 'Downloading...' : `Download All Registered ${genderLabel}PDF`}
             </button>
             <button onClick={handleDownloadSlidesPDF} disabled={downloadingSlides} className="btn" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', backgroundColor: '#2563eb', color: '#fff', fontWeight: 'bold' }}>
-              {downloadingSlides ? 'Generating Slides PDF...' : '📷 Download Player Slides PDF (Big Photos)'}
+              {downloadingSlides ? 'Generating Slides PDF...' : `📷 Download ${genderLabel}Player Slides PDF`}
             </button>
           </div>
           <Link to="/admin" className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}>Admin</Link>

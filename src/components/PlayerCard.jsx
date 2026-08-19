@@ -18,7 +18,7 @@ const PlayerCard = ({ player, viewMode = 'grid' }) => {
           src={getOptimizedImageUrl(player.photo_url, 150) || fallbackAvatar}
           alt={player.first_name}
           onError={(e) => { e.target.onerror = null; e.target.src = fallbackAvatar; }}
-          style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent-gold)', backgroundColor: '#0f172a' }}
+          style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center', border: '2px solid var(--accent-gold)', backgroundColor: '#0f172a' }}
         />
 
         <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>

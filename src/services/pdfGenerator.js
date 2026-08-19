@@ -85,7 +85,8 @@ const renderImageToCanvas = (src, width, height, isCircular, setCrossOrigin = fa
 
         const minDim = Math.min(img.width, img.height);
         const sx = (img.width - minDim) / 2;
-        const sy = (img.height - minDim) / 2;
+        // Top-align tall portrait photos to keep head/face visible instead of cropping to waist/jeans
+        const sy = img.height > img.width ? 0 : (img.height - minDim) / 2;
         ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, width, height);
 
         const dataURL = canvas.toDataURL("image/png");
@@ -365,9 +366,10 @@ export const generateAllTeamsPDF = async (activeAuction, teams, squads, options 
 /**
  * Generate PDF List View for Players with 10-12 players per page, Area removed, and Captain/Icon/Owner Tags added
  */
-export const generatePlayersListPDF = async (dataToExport, filename, activeAuction, pdfGroup = 'none') => {
+export const generatePlayersListPDF = async (dataToExport, filename, activeAuction, pdfGroup = 'none', options = {}) => {
   const doc = new jsPDF();
   let startY = 15;
+  const listTitle = options.subTitle || "Players List";
 
   if (activeAuction) {
     if (activeAuction.auction_logo) {
@@ -388,7 +390,7 @@ export const generatePlayersListPDF = async (dataToExport, filename, activeAucti
           const venueStr = activeAuction.venue ? `Venue: ${activeAuction.venue}` : '';
           doc.text(`${dateStr} ${venueStr ? ' | ' + venueStr : ''}`, 38, 22);
 
-          doc.text("Players List", 38, 27);
+          doc.text(listTitle, 38, 27);
           startY = 33;
         } else {
           doc.setFontSize(16);
@@ -397,7 +399,7 @@ export const generatePlayersListPDF = async (dataToExport, filename, activeAucti
           doc.text(activeAuction.auction_name || 'Auction Details', 14, 16);
           doc.setFontSize(10);
           doc.setFont(undefined, 'normal');
-          doc.text("Players List", 14, 24);
+          doc.text(listTitle, 14, 24);
           startY = 30;
         }
       } catch (e) {
@@ -408,7 +410,7 @@ export const generatePlayersListPDF = async (dataToExport, filename, activeAucti
         doc.text(activeAuction.auction_name || 'Auction Details', 14, 16);
         doc.setFontSize(10);
         doc.setFont(undefined, 'normal');
-        doc.text("Players List", 14, 24);
+        doc.text(listTitle, 14, 24);
         startY = 30;
       }
     } else {
@@ -422,16 +424,16 @@ export const generatePlayersListPDF = async (dataToExport, filename, activeAucti
       const venueStr = activeAuction.venue ? `Venue: ${activeAuction.venue}` : '';
       if (dateStr || venueStr) {
         doc.text(`${dateStr} ${venueStr ? ' | ' + venueStr : ''}`, 14, 23);
-        doc.text("Players List", 14, 29);
+        doc.text(listTitle, 14, 29);
         startY = 35;
       } else {
-        doc.text("Players List", 14, 23);
+        doc.text(listTitle, 14, 23);
         startY = 29;
       }
     }
   } else {
     doc.setFontSize(16);
-    doc.text('Players List', 14, 15);
+    doc.text(listTitle, 14, 15);
     startY = 25;
   }
 
@@ -531,7 +533,8 @@ export const generatePlayersListPDF = async (dataToExport, filename, activeAucti
   } else {
     const fieldMapping = {
       'area': 'area',
-      'role': 'player_role'
+      'role': 'player_role',
+      'gender': 'gender'
     };
     const field = fieldMapping[pdfGroup] || pdfGroup;
 
