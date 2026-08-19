@@ -794,7 +794,7 @@ export const generatePlayerSlidesPDF = async (playersList, filename, activeAucti
       doc.text(`SOLD FOR: ${soldWords} (${p.sold_price.toLocaleString('en-IN')})`, detailX + 8, detailY + 16);
     } else if (p.is_captain || p.is_icon || p.is_owner) {
       doc.setTextColor(22, 101, 52);
-      const desig = p.is_captain ? '👑 CAPTAIN (RETAINED)' : p.is_icon ? '⭐ ICON PLAYER' : '🛡️ OWNER PLAYER';
+      const desig = p.is_captain ? 'CAPTAIN (RETAINED)' : p.is_icon ? 'ICON PLAYER' : 'OWNER PLAYER';
       doc.text(desig, detailX + 8, detailY + 16);
     } else {
       doc.setTextColor(30, 41, 59);
