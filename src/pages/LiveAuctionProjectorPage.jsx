@@ -1208,8 +1208,8 @@ const LiveAuctionProjectorPage = () => {
                                     <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9em' }}>Bowling Style:</span>
                                     <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>{activePlayer?.players?.bowling_style || 'N/A'}</span>
                                 </div>
-                                <div style={{ opacity: 0.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    State: {activePlayer?.players?.state} | Base: ₹{(activeAuction?.base_price || 0).toLocaleString('en-IN')}
+                                <div style={{ opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9em' }}>Branch:</span> <span style={{ color: 'var(--accent-gold)', fontWeight: 600 }}>{activePlayer?.players?.branch || 'N/A'}</span> <span style={{ opacity: 0.3 }}>|</span> <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.9em' }}>Base:</span> <span style={{ color: '#fff', fontWeight: 600 }}>₹{(activeAuction?.base_price || 0).toLocaleString('en-IN')}</span>
                                 </div>
                             </div>
 

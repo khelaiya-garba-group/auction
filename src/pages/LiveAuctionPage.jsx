@@ -749,7 +749,7 @@ const LiveAuctionPage = () => {
                                                 {activePlayer.players.first_name} {activePlayer.players.last_name}
                                             </h1>
                                             <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>
-                                              State: {activePlayer.players.state} | Base Price: ₹{(activeAuction.base_price || 0).toLocaleString('en-IN')}
+                                              Branch: <span style={{ color: 'var(--accent-gold)', fontWeight: 'bold' }}>{activePlayer.players.branch || '-'}</span> | Base Price: ₹{(activeAuction.base_price || 0).toLocaleString('en-IN')}
                                               {activePlayer.players.gender && (
                                                 <span style={{ marginLeft: '1rem', color: activePlayer.players.gender.toLowerCase() === 'female' ? '#f472b6' : '#60a5fa', fontWeight: 'bold' }}>
                                                   ({activePlayer.players.gender})

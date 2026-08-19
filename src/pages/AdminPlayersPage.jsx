@@ -1038,6 +1038,7 @@ const AdminPlayersPage = () => {
                             )}
                           </div>
                         </td>
+                        <td style={{ padding: '1rem' }}><span style={{ color: 'var(--accent-gold)', fontWeight: 'bold' }}>{p.branch || '-'}</span></td>
                         <td style={{ padding: '1rem' }}>
                           {p.is_via_link ? (
                             <span style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', display: 'inline-block' }}>
@@ -1050,7 +1051,6 @@ const AdminPlayersPage = () => {
                           )}
                         </td>
                         <td style={{ padding: '1rem' }}>{p.player_role}</td>
-                        <td style={{ padding: '1rem' }}><span style={{ color: 'var(--accent-gold)', fontWeight: 'bold' }}>{p.branch || '-'}</span></td>
                         <td style={{ padding: '1rem' }}>{p.mobile}</td>
                         <td style={{ padding: '1rem' }}>{p.gender || '-'}</td>
                         <td style={{ padding: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
