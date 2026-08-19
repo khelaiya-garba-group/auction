@@ -41,7 +41,11 @@ const LiveAuctionPage = () => {
     // Search and Filter States
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('ALL');
-    const [liveGenderSession, setLiveGenderSession] = useState('Male'); // 'Male' or 'Female'
+    const genderParam = searchParams.get('gender');
+    const initialGender = (genderParam && (genderParam.toLowerCase() === 'female' || genderParam.toLowerCase() === 'male'))
+        ? (genderParam.toLowerCase() === 'female' ? 'Female' : 'Male')
+        : 'Male';
+    const [liveGenderSession, setLiveGenderSession] = useState(initialGender); // 'Male' or 'Female'
 
     // Direct Custom Bidding States
     const [customBid, setCustomBid] = useState('');
@@ -146,6 +150,11 @@ const LiveAuctionPage = () => {
                 // Find currently active player
                 const currentActive = sortedPlayers?.find(p => p.auction_status === 'active');
                 setActivePlayer(currentActive || null);
+                if (currentActive?.players?.gender) {
+                    const pGender = currentActive.players.gender.trim().toLowerCase();
+                    if (pGender === 'female') setLiveGenderSession('Female');
+                    else if (pGender === 'male') setLiveGenderSession('Male');
+                }
             }
         } catch (err) {
             console.error("Error fetching data:", err);
@@ -597,7 +606,7 @@ const LiveAuctionPage = () => {
             <div className="spotlight"></div>
             <PageHeader title="Live Auction Control" showLogos={false} />
 
-            <main className="container" style={{ padding: '2rem 1rem', zIndex: 1, position: 'relative' }}>
+            <main className="container-fluid" style={{ flex: 1, padding: '1.5rem 2rem 4rem', zIndex: 1, position: 'relative', width: '100%', maxWidth: '100%' }}>
 
                 {/* Separate Gender Session Switcher (if enabled for this auction) */}
                 {activeAuction?.is_separate_gender && (
@@ -817,8 +826,8 @@ const LiveAuctionPage = () => {
                                             </form>
                                         </div>
 
-                                        <h4 style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>PLACE BID FOR:</h4>
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
+                                        <h4 style={{ color: 'var(--text-muted)', marginBottom: '1.2rem', textAlign: 'left' }}>PLACE BID FOR:</h4>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '1rem' }}>
                                             {displayTeams.map(team => {
                                                  const maxPlayers = activeAuction?.max_players || 11;
                                                  const teamSquad = players.filter(p => p.team_id === team.id);
@@ -842,7 +851,7 @@ const LiveAuctionPage = () => {
                                                              flexDirection: 'column',
                                                              alignItems: 'center',
                                                              gap: '0.4rem',
-                                                             padding: '0.8rem',
+                                                             padding: '0.8rem 0.6rem',
                                                              position: 'relative',
                                                              borderColor: isCurrentBidder ? 'var(--accent-gold)' : isFull ? '#ef4444' : 'var(--border-color)',
                                                              background: isCurrentBidder ? 'rgba(255,215,0,0.15)' : isFull ? 'rgba(239,68,68,0.1)' : 'transparent',
@@ -851,17 +860,17 @@ const LiveAuctionPage = () => {
                                                          }}
                                                      >
                                                          {team.logo_url ? (
-                                                             <img src={team.logo_url} alt="Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+                                                             <img src={team.logo_url} alt="Logo" style={{ width: 44, height: 44, objectFit: 'contain' }} />
                                                          ) : (
-                                                             <div style={{ width: 36, height: 36, borderRadius: '4px', background: 'var(--accent-gold)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                             <div style={{ width: 44, height: 44, borderRadius: '6px', background: 'var(--accent-gold)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold' }}>
                                                                  {getTeamInitials(team.team_name)}
                                                              </div>
                                                          )}
-                                                         <span style={{ fontSize: '0.8rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>{team.team_name}</span>
+                                                         <span style={{ fontSize: '0.88rem', fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>{team.team_name}</span>
                                                          <span style={{
-                                                             fontSize: '0.7rem',
+                                                             fontSize: '0.72rem',
                                                              fontWeight: 'bold',
-                                                             padding: '0.15rem 0.4rem',
+                                                             padding: '0.12rem 0.45rem',
                                                              borderRadius: '4px',
                                                              background: isFull ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.08)',
                                                              color: isFull ? '#ef4444' : 'var(--text-muted)'
@@ -870,9 +879,9 @@ const LiveAuctionPage = () => {
                                                          </span>
                                                          {maxBudget > 0 ? (
                                                              <span style={{
-                                                                 fontSize: '0.7rem',
+                                                                 fontSize: '0.72rem',
                                                                  fontWeight: 'bold',
-                                                                 padding: '0.15rem 0.4rem',
+                                                                 padding: '0.12rem 0.45rem',
                                                                  borderRadius: '4px',
                                                                  background: remainingPurse < 0 ? 'rgba(239,68,68,0.2)' : 'rgba(57,255,20,0.12)',
                                                                  color: remainingPurse < 0 ? '#ef4444' : 'var(--accent-green)',
@@ -882,9 +891,9 @@ const LiveAuctionPage = () => {
                                                              </span>
                                                          ) : (
                                                              <span style={{
-                                                                 fontSize: '0.7rem',
+                                                                 fontSize: '0.72rem',
                                                                  fontWeight: 'bold',
-                                                                 padding: '0.15rem 0.4rem',
+                                                                 padding: '0.12rem 0.45rem',
                                                                  borderRadius: '4px',
                                                                  background: 'rgba(57,255,20,0.1)',
                                                                  color: 'var(--accent-green)',

@@ -134,13 +134,27 @@ const OBSOverlayPage = () => {
                 schema: 'public',
                 table: 'auction_players'
             }, payload => {
-                const { new: updatedPlayer } = payload;
+                const { new: updatedPlayer, eventType } = payload;
                 if (!updatedPlayer) return;
 
                 if (updatedPlayer.auction_status === 'sold') {
                     handleSoldEvent(updatedPlayer);
                 } else if (updatedPlayer.auction_status === 'unsold') {
                     handleUnsoldEvent(updatedPlayer);
+                } else if (eventType === 'UPDATE' && updatedPlayer.auction_status === 'active') {
+                    setActivePlayer(prev => {
+                        if (prev && prev.id === updatedPlayer.id) {
+                            return {
+                                ...prev,
+                                current_bid_price: updatedPlayer.current_bid_price,
+                                current_bid_team_id: updatedPlayer.current_bid_team_id,
+                                previous_bid_price: updatedPlayer.previous_bid_price,
+                                previous_bid_team_id: updatedPlayer.previous_bid_team_id
+                            };
+                        }
+                        fetchData();
+                        return prev;
+                    });
                 } else {
                     fetchData();
                 }

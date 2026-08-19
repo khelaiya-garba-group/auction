@@ -104,8 +104,10 @@ const LiveAuctionProjectorPage = () => {
             setActiveAuction(auctionData);
 
             if (auctionData) {
-                const { data: tData } = await supabase.from('auction_teams').select('*').eq('auction_id', auctionData.id);
-                setTeams(tData || []);
+                if (teams.length === 0) {
+                    const { data: tData } = await supabase.from('auction_teams').select('*').eq('auction_id', auctionData.id);
+                    setTeams(tData || []);
+                }
 
                 const { data: apData } = await supabase
                     .from('auction_players')

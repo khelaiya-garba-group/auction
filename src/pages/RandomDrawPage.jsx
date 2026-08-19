@@ -307,7 +307,7 @@ const RandomDrawPage = () => {
 
           // Auto-navigate to Live Bidding page after 1 second reveal
           setTimeout(() => {
-            navigate(`/live-auction?code=${activeAuction?.auction_code}`);
+            navigate(`/live-auction?code=${activeAuction?.auction_code}&gender=${genderTab}`);
           }, 1000);
 
         } catch (err) {
@@ -356,7 +356,7 @@ const RandomDrawPage = () => {
       if (error) throw error;
 
       // Navigate to Live Auction Page
-      navigate(`/live-auction?code=${activeAuction.auction_code}`);
+      navigate(`/live-auction?code=${activeAuction.auction_code}&gender=${genderTab}`);
     } catch (err) {
       console.error("Error starting auction:", err);
       alert("Failed to start live auction for selected player.");
@@ -369,7 +369,7 @@ const RandomDrawPage = () => {
   if (!auctionCode || (!loading && !activeAuction)) return <Navigate to="/admin" replace />;
   if (loading) return <Loader message="LOADING RANDOM PLAYER GENERATOR..." />;
 
-  const codeParam = auctionCode ? `?code=${auctionCode}` : '';
+  const codeParam = auctionCode ? `?code=${auctionCode}&gender=${genderTab}` : `?gender=${genderTab}`;
 
   return (
     <div className="flex-col min-h-screen" style={{ overflowX: 'hidden' }}>

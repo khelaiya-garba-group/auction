@@ -640,13 +640,27 @@ const AdminPlayersPage = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedList = filteredList.slice(startIndex, startIndex + itemsPerPage);
 
-  const pendingCount = playersList.filter(p => p.approval_status === 'pending').length;
-  const approvedCount = playersList.filter(p => p.approval_status === 'approved').length;
-  const rejectedCount = playersList.filter(p => p.approval_status === 'rejected').length;
-  const captainCount = playersList.filter(p => p.is_captain).length;
-  const iconCount = playersList.filter(p => p.is_icon).length;
-  const ownerCount = playersList.filter(p => p.is_owner).length;
-  const duplicateCount = duplicateInfoMap.size;
+  // Overall Registration Counts for Summary Banner
+  const totalCount = playersList.length;
+  const maleCount = playersList.filter(p => (p.gender || '').toLowerCase() === 'male').length;
+  const femaleCount = playersList.filter(p => (p.gender || '').toLowerCase() === 'female').length;
+
+  // Base list filtered by Gender & Source (so status tab badges update dynamically when filters change)
+  const baseFilteredList = playersList.filter(p => {
+    const matchesGender = genderFilter === 'all' || (p.gender && p.gender.toLowerCase() === genderFilter.toLowerCase());
+    const matchesSource = sourceFilter === 'all' || 
+      (sourceFilter === 'link' && p.is_via_link) || 
+      (sourceFilter === 'no_link' && !p.is_via_link);
+    return matchesGender && matchesSource;
+  });
+
+  const pendingCount = baseFilteredList.filter(p => p.approval_status === 'pending').length;
+  const approvedCount = baseFilteredList.filter(p => p.approval_status === 'approved').length;
+  const rejectedCount = baseFilteredList.filter(p => p.approval_status === 'rejected').length;
+  const captainCount = baseFilteredList.filter(p => p.is_captain).length;
+  const iconCount = baseFilteredList.filter(p => p.is_icon).length;
+  const ownerCount = baseFilteredList.filter(p => p.is_owner).length;
+  const duplicateCount = baseFilteredList.filter(p => duplicateInfoMap.has(p.auction_player_id)).length;
 
   return (
     <div className="flex-col min-h-screen">
@@ -654,9 +668,23 @@ const AdminPlayersPage = () => {
       <PageHeader title="Player Management" showLogos={false} />
 
       <main className="container" style={{ padding: '2rem 1rem', zIndex: 1, position: 'relative' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
             <h2 style={{ color: 'var(--text-main)', margin: 0 }}>Active Auction: {activeAuction ? activeAuction.auction_name : 'None'}</h2>
+            
+            {/* Total Gender Registration Summary Pill */}
+            <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', marginTop: '0.6rem', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>REGISTRATION COUNTS:</span>
+              <span className="badge" style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: '0.82rem', padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px solid var(--glass-border)' }}>
+                Total: <strong style={{ color: 'var(--accent-gold)' }}>{totalCount}</strong>
+              </span>
+              <span className="badge" style={{ background: 'rgba(59,130,246,0.15)', color: '#60a5fa', fontSize: '0.82rem', padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px solid rgba(59,130,246,0.3)' }}>
+                ♂ Male Registered: <strong style={{ color: '#fff' }}>{maleCount}</strong>
+              </span>
+              <span className="badge" style={{ background: 'rgba(236,72,153,0.15)', color: '#f472b6', fontSize: '0.82rem', padding: '0.35rem 0.75rem', borderRadius: '20px', border: '1px solid rgba(236,72,153,0.3)' }}>
+                ♀ Female Registered: <strong style={{ color: '#fff' }}>{femaleCount}</strong>
+              </span>
+            </div>
           </div>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             {!showForm && <button onClick={handleAddNewPlayer} className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', background: 'var(--accent-gold)' }}>+ Add Player</button>}

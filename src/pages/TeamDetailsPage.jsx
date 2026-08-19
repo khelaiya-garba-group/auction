@@ -384,26 +384,32 @@ const TeamDetailsPage = () => {
                 return;
             }
 
-            const { data: auctionData, error: auctionError } = await supabase
-                .from('auctions')
-                .select('*')
-                .eq('auction_code', auctionCode)
-                .maybeSingle();
-
-            if (auctionError) throw auctionError;
-            setActiveAuction(auctionData);
-
-            if (auctionData) {
-                const { data: tData, error: tError } = await supabase
-                    .from('auction_teams')
+            let currentAuction = activeAuction;
+            if (!currentAuction) {
+                const { data: auctionData, error: auctionError } = await supabase
+                    .from('auctions')
                     .select('*')
-                    .eq('auction_id', auctionData.id)
-                    .order('created_at', { ascending: true });
+                    .eq('auction_code', auctionCode)
+                    .maybeSingle();
 
-                if (tError) throw tError;
-                setTeams(tData || []);
-                if (tData && tData.length > 0 && !selectedTeamId) {
-                    setSelectedTeamId(tData[0].id);
+                if (auctionError) throw auctionError;
+                currentAuction = auctionData;
+                setActiveAuction(auctionData);
+            }
+
+            if (currentAuction) {
+                if (teams.length === 0) {
+                    const { data: tData, error: tError } = await supabase
+                        .from('auction_teams')
+                        .select('*')
+                        .eq('auction_id', currentAuction.id)
+                        .order('created_at', { ascending: true });
+
+                    if (tError) throw tError;
+                    setTeams(tData || []);
+                    if (tData && tData.length > 0 && !selectedTeamId) {
+                        setSelectedTeamId(tData[0].id);
+                    }
                 }
 
                 const { data: apData, error: apError } = await supabase
