@@ -35,6 +35,7 @@ const TeamBudgetPage = () => {
     const [loading, setLoading] = useState(true);
     const [expandedTeams, setExpandedTeams] = useState({});
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+    const [budgetGenderFilter, setBudgetGenderFilter] = useState('ALL');
 
     // Fetch all auctions for selection
     useEffect(() => {
@@ -321,10 +322,39 @@ const TeamBudgetPage = () => {
                             </div>
                         </div>
 
+                        {activeAuction?.is_separate_gender && (
+                            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                                {['ALL', 'Male', 'Female'].map(g => (
+                                    <button
+                                        key={g}
+                                        type="button"
+                                        onClick={() => setBudgetGenderFilter(g)}
+                                        className="btn"
+                                        style={{
+                                            padding: '0.4rem 1rem',
+                                            fontSize: '0.85rem',
+                                            borderRadius: '20px',
+                                            background: budgetGenderFilter === g ? (g === 'Female' ? '#ec4899' : 'var(--accent-gold)') : 'rgba(255,255,255,0.08)',
+                                            color: budgetGenderFilter === g ? '#000' : 'var(--text-main)',
+                                            fontWeight: 'bold',
+                                            border: '1px solid var(--glass-border)'
+                                        }}
+                                    >
+                                        {g === 'ALL' ? 'All Teams' : g === 'Female' ? '♀ Female Teams' : '♂ Male Teams'}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
                         {/* Grid View rendering */}
                         {viewMode === 'grid' ? (
                             <div className="teams-grid">
-                                {teams.map(team => {
+                                {teams
+                                  .filter(t => {
+                                      if (!activeAuction?.is_separate_gender || budgetGenderFilter === 'ALL') return true;
+                                      return (t.gender || 'Male').toLowerCase() === budgetGenderFilter.toLowerCase();
+                                  })
+                                  .map(team => {
                                     const squad = squads[team.id] || [];
                                     const spent = squad.reduce((acc, p) => acc + (p.sold_price || 0), 0);
                                     const maxBudget = activeAuction.max_budget || 0;
@@ -487,7 +517,12 @@ const TeamBudgetPage = () => {
                         ) : (
                             /* List View rendering */
                             <div className="teams-list">
-                                {teams.map(team => {
+                                {teams
+                                  .filter(t => {
+                                      if (!activeAuction?.is_separate_gender || budgetGenderFilter === 'ALL') return true;
+                                      return (t.gender || 'Male').toLowerCase() === budgetGenderFilter.toLowerCase();
+                                  })
+                                  .map(team => {
                                     const squad = squads[team.id] || [];
                                     const spent = squad.reduce((acc, p) => acc + (p.sold_price || 0), 0);
                                     const maxBudget = activeAuction.max_budget || 0;

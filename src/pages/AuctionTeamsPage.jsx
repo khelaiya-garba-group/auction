@@ -40,9 +40,11 @@ const AuctionTeamsPage = () => {
   
   const initialFormState = {
     team_name: '',
+    gender: 'Male',
     logo: null
   };
   const [formData, setFormData] = useState(initialFormState);
+  const [teamGenderFilter, setTeamGenderFilter] = useState('ALL');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -154,7 +156,7 @@ const AuctionTeamsPage = () => {
 
   const handleEditClick = (team) => {
     setEditingTeam(team);
-    setFormData({ team_name: team.team_name, logo: null });
+    setFormData({ team_name: team.team_name, gender: team.gender || 'Male', logo: null });
     setFormError('');
     if (fileInputRef.current) fileInputRef.current.value = "";
     setShowForm(true);
@@ -191,6 +193,7 @@ const AuctionTeamsPage = () => {
       const payload = {
         auction_id: activeAuction.id,
         team_name: formData.team_name,
+        gender: formData.gender || 'Male',
         logo_url
       };
 
@@ -512,6 +515,16 @@ const AuctionTeamsPage = () => {
                   <label className="form-label">Team Name *</label>
                   <input required type="text" name="team_name" value={formData.team_name} onChange={handleFormChange} className="form-input" placeholder="e.g. Mumbai Indians" />
                 </div>
+                {activeAuction?.is_separate_gender && (
+                  <div className="form-group">
+                    <label className="form-label">Team Category / Gender *</label>
+                    <select name="gender" value={formData.gender || 'Male'} onChange={handleFormChange} className="form-select">
+                      <option value="Male">♂ Male Team</option>
+                      <option value="Female">♀ Female Team</option>
+                      <option value="Both">Both / Unisex Team</option>
+                    </select>
+                  </div>
+                )}
                 <div className="form-group">
                   <label className="form-label">Team Logo {editingTeam?.logo_url && '(Uploaded)'}</label>
                   <input type="file" name="logo" accept="image/*" onChange={handleFormChange} className="form-input" ref={fileInputRef} />
@@ -525,9 +538,37 @@ const AuctionTeamsPage = () => {
           </div>
         ) : (
           <div className="glass-panel" style={{ padding: '2rem' }}>
+            {activeAuction?.is_separate_gender && (
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                {['ALL', 'Male', 'Female'].map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setTeamGenderFilter(g)}
+                    className="btn"
+                    style={{
+                      padding: '0.4rem 1rem',
+                      fontSize: '0.85rem',
+                      borderRadius: '20px',
+                      background: teamGenderFilter === g ? (g === 'Female' ? '#ec4899' : 'var(--accent-gold)') : 'rgba(255,255,255,0.08)',
+                      color: teamGenderFilter === g ? '#000' : 'var(--text-main)',
+                      fontWeight: 'bold',
+                      border: '1px solid var(--glass-border)'
+                    }}
+                  >
+                    {g === 'ALL' ? 'All Teams' : g === 'Female' ? '♀ Female Teams' : '♂ Male Teams'}
+                  </button>
+                ))}
+              </div>
+            )}
             {teams.length === 0 ? <p className="text-muted text-center" style={{ padding: '2rem' }}>No teams created yet. Start by adding a team!</p> : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '2rem' }}>
-                {teams.map(team => {
+                {teams
+                  .filter(t => {
+                    if (!activeAuction?.is_separate_gender || teamGenderFilter === 'ALL') return true;
+                    return (t.gender || 'Male').toLowerCase() === teamGenderFilter.toLowerCase();
+                  })
+                  .map(team => {
                     const teamIcons = iconsByTeam[team.id] || [];
                     const maxIcons = activeAuction?.number_of_icon !== null && activeAuction?.number_of_icon !== undefined ? parseInt(activeAuction.number_of_icon) : 999;
                     const canAddMoreIcons = teamIcons.length < maxIcons;
@@ -567,7 +608,21 @@ const AuctionTeamsPage = () => {
                                 </div>
                             )}
                             <div style={{ flex: 1 }}>
-                                <h3 style={{ margin: '0 0 0.2rem 0', color: 'var(--text-main)' }}>{team.team_name}</h3>
+                                <h3 style={{ margin: '0 0 0.2rem 0', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  {team.team_name}
+                                  {activeAuction?.is_separate_gender && (
+                                    <span style={{
+                                      fontSize: '0.7rem',
+                                      padding: '0.1rem 0.4rem',
+                                      borderRadius: '4px',
+                                      background: (team.gender || 'Male').toLowerCase() === 'female' ? 'rgba(236,72,153,0.2)' : 'rgba(59,130,246,0.2)',
+                                      color: (team.gender || 'Male').toLowerCase() === 'female' ? '#f472b6' : '#60a5fa',
+                                      border: '1px solid rgba(255,255,255,0.1)'
+                                    }}>
+                                      {(team.gender || 'Male').toLowerCase() === 'female' ? '♀ Female' : '♂ Male'}
+                                    </span>
+                                  )}
+                                </h3>
                                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                                     Icons: {teamIcons.length}/{maxIcons > 100 ? '∞' : maxIcons} | Owners: {combinedTeamOwners.length}/{maxOwners > 100 ? '∞' : maxOwners}
                                 </div>

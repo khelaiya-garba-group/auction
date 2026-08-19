@@ -44,7 +44,8 @@ const AuctionPage = () => {
     registration_type: 'private',
     ask_tshirt_details: false,
     youtube_live_url: '',
-    is_live_streaming: false
+    is_live_streaming: false,
+    is_separate_gender: false
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -100,6 +101,7 @@ const AuctionPage = () => {
       ask_tshirt_details: auction.ask_tshirt_details || false,
       youtube_live_url: auction.youtube_live_url || '',
       is_live_streaming: auction.is_live_streaming || false,
+      is_separate_gender: auction.is_separate_gender || false,
       logo: null, // Don't reload file objects
       qr_code: null
     });
@@ -154,6 +156,7 @@ const AuctionPage = () => {
         ask_tshirt_details: !!formData.ask_tshirt_details,
         youtube_live_url: formData.youtube_live_url || null,
         is_live_streaming: !!formData.is_live_streaming,
+        is_separate_gender: !!formData.is_separate_gender,
         per_player_fees: formData.per_player_fees ? parseFloat(formData.per_player_fees) : null,
         number_of_teams: formData.number_of_teams ? parseInt(formData.number_of_teams, 10) : null,
         number_of_icon: formData.number_of_icon ? parseInt(formData.number_of_icon, 10) : null,
@@ -303,6 +306,18 @@ const AuctionPage = () => {
                   <option value="true">Enabled (Show Watch Live Stream on Homepage)</option>
                 </select>
               </div>
+              <div className="form-group" style={{ gridColumn: '1 / -1', background: 'rgba(255,215,0,0.05)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,215,0,0.2)' }}>
+                <label className="form-label" style={{ color: 'var(--accent-gold)', fontWeight: 'bold' }}>
+                  Separate Auction for Male & Female Players?
+                </label>
+                <select name="is_separate_gender" value={formData.is_separate_gender ? "true" : "false"} onChange={(e) => setFormData(prev => ({ ...prev, is_separate_gender: e.target.value === "true" }))} className="form-select">
+                  <option value="false">No (Combined / Unified Auction - Default)</option>
+                  <option value="true">Yes (Separate Male & Female Teams & Bidding Sessions)</option>
+                </select>
+                <span className="text-muted" style={{ fontSize: '0.8rem', display: 'block', marginTop: '0.3rem' }}>
+                  If enabled, you can assign teams as Male/Female and switch between Male and Female bidding sessions during Live Auction & Random Draw within this single auction.
+                </span>
+              </div>
               <div className="form-group">
                 <label className="form-label">Auction Logo {editingAuction?.auction_logo && '(Uploaded)'}</label>
                 <input type="file" name="logo" accept="image/*" onChange={handleChange} className="form-input" ref={fileInputRef} />
@@ -363,6 +378,13 @@ const AuctionPage = () => {
                           <td style={{ padding: '1rem' }}>
                             <div style={{ fontWeight: 'bold' }}>{a.auction_name}</div>
                             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Code: {a.auction_code}</div>
+                            {a.is_separate_gender && (
+                              <div style={{ marginTop: '0.2rem' }}>
+                                <span style={{ padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', background: 'rgba(236,72,153,0.15)', color: '#f472b6', border: '1px solid rgba(236,72,153,0.3)' }}>
+                                  ♂ Male & ♀ Female Separate
+                                </span>
+                              </div>
+                            )}
                           </td>
                           <td style={{ padding: '1rem' }}>
                             <div>{a.venue || '-'}</div>

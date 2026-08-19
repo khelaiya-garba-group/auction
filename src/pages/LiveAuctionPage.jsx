@@ -41,6 +41,7 @@ const LiveAuctionPage = () => {
     // Search and Filter States
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('ALL');
+    const [liveGenderSession, setLiveGenderSession] = useState('Male'); // 'Male' or 'Female'
 
     // Direct Custom Bidding States
     const [customBid, setCustomBid] = useState('');
@@ -574,10 +575,18 @@ const LiveAuctionPage = () => {
         const matchesSearch = (p.players.first_name + ' ' + p.players.last_name).toLowerCase().includes(lowSearch) || 
                               (p.player_number && p.player_number.toString().includes(searchTerm));
         const matchesRole = roleFilter === 'ALL' || p.players.player_role === roleFilter;
-        return matchesStatus && matchesSearch && matchesRole;
+        const matchesGender = !activeAuction?.is_separate_gender || (p.players?.gender || '').toLowerCase() === liveGenderSession.toLowerCase();
+        return matchesStatus && matchesSearch && matchesRole && matchesGender;
     });
     const soldPlayers = players.filter(p => p.auction_status === 'sold' && !p.is_icon && !p.is_captain);
     const unsoldPlayers = players.filter(p => p.auction_status === 'unsold');
+
+    // Display teams filtered by session if separate gender auction mode is enabled
+    const displayTeams = teams.filter(t => {
+        if (!activeAuction?.is_separate_gender) return true;
+        const tGen = (t.gender || 'Male').toLowerCase();
+        return tGen === liveGenderSession.toLowerCase() || tGen === 'both';
+    });
 
     // Get unique roles for filter
     const roles = ['ALL', ...new Set(players.map(p => p.players.player_role).filter(Boolean))];
@@ -589,6 +598,69 @@ const LiveAuctionPage = () => {
             <PageHeader title="Live Auction Control" showLogos={false} />
 
             <main className="container" style={{ padding: '2rem 1rem', zIndex: 1, position: 'relative' }}>
+
+                {/* Separate Gender Session Switcher (if enabled for this auction) */}
+                {activeAuction?.is_separate_gender && (
+                    <div style={{
+                        background: 'rgba(0,0,0,0.5)',
+                        padding: '1rem 1.5rem',
+                        borderRadius: '12px',
+                        border: '1px solid rgba(255,215,0,0.3)',
+                        marginBottom: '1.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justify: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '1rem'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <span style={{ fontSize: '1.2rem' }}>⚡</span>
+                            <div>
+                                <div style={{ color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '0.95rem' }}>
+                                    SEPARATE GENDER AUCTION SESSION
+                                </div>
+                                <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                                    Switch session to manage Male or Female bidding & teams separately
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '0.8rem' }}>
+                            <button
+                                type="button"
+                                onClick={() => setLiveGenderSession('Male')}
+                                className="btn"
+                                style={{
+                                    padding: '0.6rem 1.25rem',
+                                    fontWeight: 'bold',
+                                    borderRadius: '30px',
+                                    background: liveGenderSession === 'Male' ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' : 'rgba(255,255,255,0.08)',
+                                    color: '#fff',
+                                    border: liveGenderSession === 'Male' ? '2px solid #60a5fa' : '1px solid var(--glass-border)',
+                                    boxShadow: liveGenderSession === 'Male' ? '0 0 15px rgba(59,130,246,0.5)' : 'none'
+                                }}
+                            >
+                                ♂ MALE SESSION ({teams.filter(t => (t.gender || 'Male').toLowerCase() === 'male').length} Teams)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setLiveGenderSession('Female')}
+                                className="btn"
+                                style={{
+                                    padding: '0.6rem 1.25rem',
+                                    fontWeight: 'bold',
+                                    borderRadius: '30px',
+                                    background: liveGenderSession === 'Female' ? 'linear-gradient(135deg, #ec4899, #be185d)' : 'rgba(255,255,255,0.08)',
+                                    color: '#fff',
+                                    border: liveGenderSession === 'Female' ? '2px solid #f472b6' : '1px solid var(--glass-border)',
+                                    boxShadow: liveGenderSession === 'Female' ? '0 0 15px rgba(236,72,153,0.5)' : 'none'
+                                }}
+                            >
+                                ♀ FEMALE SESSION ({teams.filter(t => (t.gender || 'Male').toLowerCase() === 'female').length} Teams)
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 {/* Tabs */}
                 <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
@@ -667,7 +739,14 @@ const LiveAuctionPage = () => {
                                                 {activePlayer.player_number && <span style={{ color: 'var(--accent-gold)', marginRight: '1rem' }}>#{activePlayer.player_number}</span>}
                                                 {activePlayer.players.first_name} {activePlayer.players.last_name}
                                             </h1>
-                                            <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>State: {activePlayer.players.state} | Base Price: ₹{(activeAuction.base_price || 0).toLocaleString('en-IN')}</p>
+                                            <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem' }}>
+                                              State: {activePlayer.players.state} | Base Price: ₹{(activeAuction.base_price || 0).toLocaleString('en-IN')}
+                                              {activePlayer.players.gender && (
+                                                <span style={{ marginLeft: '1rem', color: activePlayer.players.gender.toLowerCase() === 'female' ? '#f472b6' : '#60a5fa', fontWeight: 'bold' }}>
+                                                  ({activePlayer.players.gender})
+                                                </span>
+                                              )}
+                                            </p>
 
                                             <div style={{ marginTop: '2rem', background: 'rgba(255,215,0,0.1)', padding: '1.5rem', borderRadius: '10px', border: '1px solid var(--accent-gold)', overflow: 'hidden' }}>
                                                 <div style={{ fontSize: '0.9rem', color: 'var(--accent-gold)', textTransform: 'uppercase', letterSpacing: '2px' }}>Current Highest Bid</div>
@@ -722,7 +801,7 @@ const LiveAuctionPage = () => {
                                                         required
                                                     >
                                                         <option value="">-- Choose Team --</option>
-                                                        {teams.map(team => (
+                                                        {displayTeams.map(team => (
                                                             <option key={team.id} value={team.id}>{team.team_name}</option>
                                                         ))}
                                                     </select>
@@ -740,11 +819,17 @@ const LiveAuctionPage = () => {
 
                                         <h4 style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>PLACE BID FOR:</h4>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '1rem' }}>
-                                            {teams.map(team => {
+                                            {displayTeams.map(team => {
                                                  const maxPlayers = activeAuction?.max_players || 11;
-                                                 const squadCount = players.filter(p => p.team_id === team.id).length;
+                                                 const teamSquad = players.filter(p => p.team_id === team.id);
+                                                 const squadCount = teamSquad.length;
                                                  const isFull = squadCount >= maxPlayers;
-                                                 const isCurrentBidder = team.id === activePlayer.current_bid_team_id;
+                                                 const isCurrentBidder = activePlayer && team.id === activePlayer.current_bid_team_id;
+
+                                                 const maxBudget = activeAuction?.max_budget || 0;
+                                                 const spent = teamSquad.reduce((acc, p) => acc + (p.sold_price || 0), 0);
+                                                 const activeBidCost = isCurrentBidder ? (activePlayer?.current_bid_price || 0) : 0;
+                                                 const remainingPurse = maxBudget - spent - activeBidCost;
 
                                                  return (
                                                      <button
@@ -783,6 +868,31 @@ const LiveAuctionPage = () => {
                                                          }}>
                                                              {isFull ? `FULL (${squadCount}/${maxPlayers})` : `Squad: ${squadCount}/${maxPlayers}`}
                                                          </span>
+                                                         {maxBudget > 0 ? (
+                                                             <span style={{
+                                                                 fontSize: '0.7rem',
+                                                                 fontWeight: 'bold',
+                                                                 padding: '0.15rem 0.4rem',
+                                                                 borderRadius: '4px',
+                                                                 background: remainingPurse < 0 ? 'rgba(239,68,68,0.2)' : 'rgba(57,255,20,0.12)',
+                                                                 color: remainingPurse < 0 ? '#ef4444' : 'var(--accent-green)',
+                                                                 border: remainingPurse < 0 ? '1px solid rgba(239,68,68,0.4)' : '1px solid rgba(57,255,20,0.3)'
+                                                             }}>
+                                                                 Purse: ₹{remainingPurse.toLocaleString('en-IN')}
+                                                             </span>
+                                                         ) : (
+                                                             <span style={{
+                                                                 fontSize: '0.7rem',
+                                                                 fontWeight: 'bold',
+                                                                 padding: '0.15rem 0.4rem',
+                                                                 borderRadius: '4px',
+                                                                 background: 'rgba(57,255,20,0.1)',
+                                                                 color: 'var(--accent-green)',
+                                                                 border: '1px solid rgba(57,255,20,0.3)'
+                                                             }}>
+                                                                 Spent: ₹{spent.toLocaleString('en-IN')}
+                                                             </span>
+                                                         )}
                                                      </button>
                                                  );
                                              })}
