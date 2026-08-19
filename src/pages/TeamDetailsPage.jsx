@@ -72,7 +72,7 @@ const TeamDetailsPage = () => {
             msg += `No players registered in this team yet.\n`;
         } else {
             squad.forEach((ap, idx) => {
-                const p = ap.players || {};
+                const p = ap?.players || ap || {};
                 const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown';
                 const printName = p.tshirt_name || '-';
                 const size = p.tshirt_size || '-';
@@ -99,8 +99,16 @@ const TeamDetailsPage = () => {
 
     const handleDownloadSingleTeamTshirtPdf = async (team) => {
         if (!team) return;
-        const squad = squads[team.id] || [];
-        await generateSingleTeamTshirtPDF(activeAuction, team, squad);
+        setIsGeneratingPdf(true);
+        try {
+            const squad = squads[team.id] || [];
+            await generateSingleTeamTshirtPDF(activeAuction, team, squad);
+        } catch (err) {
+            console.error("Single team tshirt PDF error:", err);
+            alert("Failed to generate team T-Shirt PDF.");
+        } finally {
+            setIsGeneratingPdf(false);
+        }
     };
 
     const handleSendTshirtPdfWhatsApp = async (team) => {
@@ -225,9 +233,10 @@ const TeamDetailsPage = () => {
         if (purchased.length > 0) {
             msg += `🏏 *PURCHASED SQUAD (${purchased.length})*:\n`;
             purchased.forEach((p, idx) => {
-                const name = `${p.players?.first_name || ''} ${p.players?.last_name || ''}`.trim();
-                const mob = p.players?.mobile;
-                const role = p.players?.player_role || 'Player';
+                const details = p.players || p || {};
+                const name = `${details.first_name || ''} ${details.last_name || ''}`.trim() || 'Player';
+                const mob = details.mobile;
+                const role = details.player_role || 'Player';
                 const price = p.sold_price ? ` - ₹${p.sold_price.toLocaleString('en-IN')}` : '';
                 msg += `${idx + 1}. ${name}${mob ? ` - 📞 ${mob}` : ''} (${role})${price}\n`;
             });
@@ -239,8 +248,16 @@ const TeamDetailsPage = () => {
 
     const handleDownloadSingleTeamPdf = async (team) => {
         if (!team) return;
-        const squad = squads[team.id] || [];
-        await generateSingleTeamPDF(activeAuction, team, squad);
+        setIsGeneratingPdf(true);
+        try {
+            const squad = squads[team.id] || [];
+            await generateSingleTeamPDF(activeAuction, team, squad);
+        } catch (err) {
+            console.error("Single team PDF generation error:", err);
+            alert("Failed to generate team squad PDF.");
+        } finally {
+            setIsGeneratingPdf(false);
+        }
     };
 
     const handleSendPdfWhatsApp = async (team) => {
@@ -398,24 +415,23 @@ const TeamDetailsPage = () => {
             }
 
             if (currentAuction) {
-                if (teams.length === 0) {
-                    const { data: tData, error: tError } = await supabase
-                        .from('auction_teams')
-                        .select('*')
-                        .eq('auction_id', currentAuction.id)
-                        .order('created_at', { ascending: true });
+                const { data: tData, error: tError } = await supabase
+                    .from('auction_teams')
+                    .select('*')
+                    .eq('auction_id', currentAuction.id)
+                    .order('created_at', { ascending: true });
 
-                    if (tError) throw tError;
-                    setTeams(tData || []);
-                    if (tData && tData.length > 0 && !selectedTeamId) {
-                        setSelectedTeamId(tData[0].id);
-                    }
+                if (tError) throw tError;
+                const currentTeams = tData || [];
+                setTeams(currentTeams);
+                if (currentTeams.length > 0 && !selectedTeamId) {
+                    setSelectedTeamId(currentTeams[0].id);
                 }
 
                 const { data: apData, error: apError } = await supabase
                     .from('auction_players')
                     .select('*, players(*)')
-                    .eq('auction_id', auctionData.id)
+                    .eq('auction_id', currentAuction.id)
                     .eq('approval_status', 'approved');
 
                 if (apError) throw apError;
@@ -425,7 +441,7 @@ const TeamDetailsPage = () => {
                 const { data: toData } = await supabase
                     .from('team_owners')
                     .select('*, owners(*)')
-                    .eq('auction_id', auctionData.id);
+                    .eq('auction_id', currentAuction.id);
 
                 const teamOwnersGrouped = {};
                 (toData || []).forEach(to => {
@@ -435,7 +451,7 @@ const TeamDetailsPage = () => {
                 setTeamOwnersMap(teamOwnersGrouped);
 
                 const grouped = {};
-                (tData || []).forEach(team => {
+                currentTeams.forEach(team => {
                     grouped[team.id] = (apData || []).filter(p => p.team_id === team.id);
                 });
                 setSquads(grouped);

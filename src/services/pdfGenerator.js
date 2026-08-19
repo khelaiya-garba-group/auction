@@ -52,7 +52,7 @@ const renderImageToCanvas = (src, width, height, isCircular, setCrossOrigin = fa
 
     const timer = setTimeout(() => {
       resolve(null);
-    }, 6000);
+    }, 2000);
 
     img.onload = () => {
       clearTimeout(timer);
@@ -240,7 +240,7 @@ export const generateAllTeamsPDF = async (activeAuction, teams, squads, options 
 
     // Preload player photos concurrently with robust multi-tiered loader
     const photoPromises = combinedPlayers.map(p => {
-      const playerDetails = p.players || {};
+      const playerDetails = p?.players || p || {};
       const photoUrl = playerDetails.photo_url ? getOptimizedImageUrl(playerDetails.photo_url, 300) : null;
       const initials = getPlayerInitials(playerDetails);
       return getBase64ImageFromURL(photoUrl, { isCircular: false, width: 200, height: 200, fallbackInitials: initials });
@@ -250,7 +250,7 @@ export const generateAllTeamsPDF = async (activeAuction, teams, squads, options 
     const tableColumn = ["Sr.", "Photo", "Player Name", "Role", "Batting", "Bowling", "Bid Price", "Tag"];
 
     const tableRows = combinedPlayers.map((p, index) => {
-      const playerDetails = p.players || {};
+      const playerDetails = p?.players || p || {};
       const fullName = `${playerDetails.first_name || ''} ${playerDetails.last_name || ''}`.trim() || 'Unknown';
       const capt = isCapt(p);
       const viceCapt = isViceCapt(p);
@@ -857,8 +857,9 @@ export const generateVendorTshirtPDF = async (activeAuction, teams, squads) => {
   teams.forEach(team => {
     const squad = squads[team.id] || [];
     squad.forEach(ap => {
-      const p = ap.players || {};
-      const sz = p.tshirt_size ? p.tshirt_size.trim() : 'Unspecified';
+      if (!ap) return;
+      const p = ap.players || ap || {};
+      const sz = p.tshirt_size ? String(p.tshirt_size).trim() : 'Unspecified';
       sizeCounts[sz] = (sizeCounts[sz] || 0) + 1;
       totalTshirts++;
     });
@@ -901,8 +902,9 @@ export const generateVendorTshirtPDF = async (activeAuction, teams, squads) => {
     // Calculate Team-specific T-Shirt Size summary
     const teamSizeMap = {};
     squad.forEach(ap => {
-      const p = ap.players || {};
-      const sz = p.tshirt_size ? p.tshirt_size.trim() : 'Unspecified';
+      if (!ap) return;
+      const p = ap.players || ap || {};
+      const sz = p.tshirt_size ? String(p.tshirt_size).trim() : 'Unspecified';
       teamSizeMap[sz] = (teamSizeMap[sz] || 0) + 1;
     });
 
@@ -927,7 +929,7 @@ export const generateVendorTshirtPDF = async (activeAuction, teams, squads) => {
 
     const teamColumns = ["Sr.", "Player Name", "T-Shirt Print Name", "Size", "Number"];
     const teamRows = squad.map((ap, idx) => {
-      const p = ap.players || {};
+      const p = ap?.players || ap || {};
       const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown';
       return [
         idx + 1,
@@ -1000,8 +1002,9 @@ export const generateSingleTeamTshirtPDF = async (activeAuction, team, squad, op
   // Size breakdown calculation for this team
   const teamSizeMap = {};
   squad.forEach(ap => {
-    const p = ap.players || {};
-    const sz = p.tshirt_size ? p.tshirt_size.trim() : 'Unspecified';
+    if (!ap) return;
+    const p = ap.players || ap || {};
+    const sz = p.tshirt_size ? String(p.tshirt_size).trim() : 'Unspecified';
     teamSizeMap[sz] = (teamSizeMap[sz] || 0) + 1;
   });
 
@@ -1027,7 +1030,7 @@ export const generateSingleTeamTshirtPDF = async (activeAuction, team, squad, op
   // Table of Team T-Shirt Details
   const teamColumns = ["Sr.", "Player Name", "T-Shirt Print Name", "Size", "Number"];
   const teamRows = squad.map((ap, idx) => {
-    const p = ap.players || {};
+    const p = ap?.players || ap || {};
     const fullName = `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown';
     return [
       idx + 1,

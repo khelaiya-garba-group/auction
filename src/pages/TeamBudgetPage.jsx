@@ -198,9 +198,10 @@ const TeamBudgetPage = () => {
         if (purchased.length > 0) {
             msg += `🏏 *PURCHASED SQUAD (${purchased.length})*:\n`;
             purchased.forEach((p, idx) => {
-                const name = `${p.players?.first_name || ''} ${p.players?.last_name || ''}`.trim();
-                const mob = p.players?.mobile;
-                const role = p.players?.player_role || 'Player';
+                const details = p.players || p || {};
+                const name = `${details.first_name || ''} ${details.last_name || ''}`.trim() || 'Player';
+                const mob = details.mobile;
+                const role = details.player_role || 'Player';
                 const price = p.sold_price ? ` - ₹${p.sold_price.toLocaleString('en-IN')}` : '';
                 msg += `${idx + 1}. ${name}${mob ? ` - 📞 ${mob}` : ''} (${role})${price}\n`;
             });
@@ -211,8 +212,14 @@ const TeamBudgetPage = () => {
     };
 
     const handleDownloadPDF = async (team) => {
-        const squad = squads[team.id] || [];
-        await generateSingleTeamPDF(activeAuction, team, squad);
+        if (!team) return;
+        try {
+            const squad = squads[team.id] || [];
+            await generateSingleTeamPDF(activeAuction, team, squad);
+        } catch (err) {
+            console.error("Team budget PDF generation error:", err);
+            alert("Failed to generate team PDF.");
+        }
     };
 
     const isMobile = window.innerWidth < 768;
