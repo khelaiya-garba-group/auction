@@ -83,11 +83,15 @@ const renderImageToCanvas = (src, width, height, isCircular, setCrossOrigin = fa
           ctx.clip();
         }
 
-        const minDim = Math.min(img.width, img.height);
-        const sx = (img.width - minDim) / 2;
-        // Top-align tall portrait photos to keep head/face visible instead of cropping to waist/jeans
-        const sy = img.height > img.width ? 0 : (img.height - minDim) / 2;
-        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, width, height);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, width, height);
+
+        const scale = Math.min(width / img.width, height / img.height);
+        const nw = img.width * scale;
+        const nh = img.height * scale;
+        const nx = (width - nw) / 2;
+        const ny = (height - nh) / 2;
+        ctx.drawImage(img, 0, 0, img.width, img.height, nx, ny, nw, nh);
 
         const dataURL = canvas.toDataURL("image/png");
         resolve(dataURL);

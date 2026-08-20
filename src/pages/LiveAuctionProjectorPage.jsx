@@ -1134,10 +1134,12 @@ const LiveAuctionProjectorPage = () => {
                                         alt="Player"
                                         onError={() => setImageError(true)}
                                         style={{
-                                            width: 'auto',
+                                            width: isMobile ? 'clamp(260px, 75vw, 450px)' : 'clamp(320px, 28vw, 500px)',
                                             height: isMobile ? 'clamp(260px, 75vw, 450px)' : 'clamp(420px, 68vh, 750px)',
                                             maxWidth: '100%',
-                                            objectFit: 'cover',
+                                            objectFit: 'contain',
+                                            objectPosition: 'top center',
+                                            backgroundColor: '#090d16',
                                             borderRadius: 'clamp(12px, 2vw, 30px)',
                                             border: 'clamp(4px, 0.8vw, 8px) solid #ffd700',
                                             boxShadow: '0 0 80px rgba(255,215,0,0.2)',
@@ -1146,7 +1148,7 @@ const LiveAuctionProjectorPage = () => {
                                     />
                                 ) : (
                                     <div style={{
-                                        width: isMobile ? 'clamp(260px, 75vw, 450px)' : 'clamp(420px, 68vh, 750px)',
+                                        width: isMobile ? 'clamp(260px, 75vw, 450px)' : 'clamp(320px, 28vw, 500px)',
                                         height: isMobile ? 'clamp(260px, 75vw, 450px)' : 'clamp(420px, 68vh, 750px)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         background: 'linear-gradient(135deg, rgba(255,215,0,0.1), rgba(57,255,20,0.05))',
@@ -1605,7 +1607,8 @@ const LiveAuctionProjectorPage = () => {
                                                 height: isSmall ? 'clamp(80px, 18vh, 120px)' : 'clamp(120px, 22vh, 220px)',
                                                 borderRadius: '50%',
                                                 border: 'clamp(3px, 0.6vw, 8px) solid #39ff14',
-                                                objectFit: 'cover',
+                                                objectFit: 'contain',
+                                                backgroundColor: '#0f172a',
                                                 boxShadow: '0 0 40px rgba(57,255,20,0.3)',
                                                 flexShrink: 0,
                                             }}
@@ -1863,7 +1866,8 @@ const LiveAuctionProjectorPage = () => {
                                                 height: isSmall ? 'clamp(80px, 18vh, 120px)' : 'clamp(120px, 22vh, 220px)',
                                                 borderRadius: '50%',
                                                 border: 'clamp(3px, 0.6vw, 8px) solid #94a3b8',
-                                                objectFit: 'cover',
+                                                objectFit: 'contain',
+                                                backgroundColor: '#0f172a',
                                                 boxShadow: '0 0 40px rgba(148,163,184,0.2)',
                                                 flexShrink: 0,
                                                 filter: 'grayscale(0.5)'
@@ -2011,7 +2015,8 @@ const LiveAuctionProjectorPage = () => {
                                         height: '130px',
                                         borderRadius: '16px',
                                         border: '3px solid var(--accent-gold)',
-                                        objectFit: 'cover',
+                                        objectFit: 'contain',
+                                        backgroundColor: '#0f172a',
                                         boxShadow: '0 0 25px rgba(255,215,0,0.4)'
                                     }}
                                 />

@@ -713,7 +713,7 @@ const AuctionTeamsPage = () => {
                                                       src={getOptimizedImageUrl(o.photo_url, 100)}
                                                       alt="Owner"
                                                       onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }}
-                                                      style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: '50%', border: '1px solid var(--accent-green)' }}
+                                                      style={{ width: 32, height: 32, objectFit: 'contain', backgroundColor: '#0f172a', borderRadius: '50%', border: '1px solid var(--accent-green)' }}
                                                     />
                                                 ) : null}
                                                 <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(57,255,20,0.2)', display: o.photo_url ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--accent-green)', border: '1px solid var(--accent-green)' }}>
@@ -782,7 +782,7 @@ const AuctionTeamsPage = () => {
                                         <li key={p.auction_player_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,215,0,0.05)', padding: '0.5rem 0.8rem', borderRadius: '4px', border: '1px solid rgba(255,215,0,0.2)' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                                                 {p.photo_url ? (
-                                                    <img src={getOptimizedImageUrl(p.photo_url, 100)} alt="Player" style={{ width: 30, height: 30, objectFit: 'cover', borderRadius: '50%' }} />
+                                                    <img src={getOptimizedImageUrl(p.photo_url, 100)} alt="Player" style={{ width: 30, height: 30, objectFit: 'contain', backgroundColor: '#0f172a', borderRadius: '50%' }} />
                                                 ) : (
                                                     <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 'bold', color: '#fff' }}>
                                                         {getPlayerInitials(p)}

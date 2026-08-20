@@ -411,7 +411,7 @@ const AdminOwnersPage = () => {
                             #{selectedAp.player_number || 'N/A'}
                           </span>
                           {p.photo_url ? (
-                            <img src={getOptimizedImageUrl(p.photo_url, 80)} alt="Player" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--accent-green)' }} />
+                            <img src={getOptimizedImageUrl(p.photo_url, 80)} alt="Player" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a', border: '1px solid var(--accent-green)' }} />
                           ) : (
                             <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(57,255,20,0.2)', color: 'var(--accent-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.9rem' }}>
                               {getInitials(`${p.first_name || ''} ${p.last_name || ''}`)}
@@ -506,7 +506,7 @@ const AdminOwnersPage = () => {
                                       #{ap.player_number || 'N/A'}
                                     </span>
                                     {p.photo_url ? (
-                                      <img src={getOptimizedImageUrl(p.photo_url, 60)} alt={p.first_name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                                      <img src={getOptimizedImageUrl(p.photo_url, 60)} alt={p.first_name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a' }} />
                                     ) : (
                                       <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>
                                         {getInitials(`${p.first_name || ''} ${p.last_name || ''}`)}
@@ -602,7 +602,7 @@ const AdminOwnersPage = () => {
                     src={getOptimizedImageUrl(formData.photo_url, 120)}
                     alt="Owner Preview"
                     onError={(e) => { e.target.style.display = 'none'; }}
-                    style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent-gold)' }}
+                    style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a', border: '2px solid var(--accent-gold)' }}
                   />
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Current Owner Photo</span>
                 </div>
@@ -724,7 +724,7 @@ const AdminOwnersPage = () => {
                         src={getOptimizedImageUrl(owner.photo_url, 150)}
                         alt={owner.owner_name}
                         onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }}
-                        style={{ width: 70, height: 70, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent-gold)', boxShadow: '0 0 10px rgba(255,215,0,0.2)' }}
+                        style={{ width: 70, height: 70, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a', border: '2px solid var(--accent-gold)', boxShadow: '0 0 10px rgba(255,215,0,0.2)' }}
                       />
                     ) : null}
                     <div style={{ width: 70, height: 70, borderRadius: '50%', background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '2px solid var(--accent-gold)', display: owner.photo_url ? 'none' : 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-gold)', fontWeight: 'bold', fontSize: '1.4rem' }}>

@@ -1212,7 +1212,7 @@ const TeamDetailsPage = () => {
                                                     {combinedOwners.length === 0 ? <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No team owners assigned.</p> : combinedOwners.map(owner => (
                                                         <div key={owner.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(57,255,20,0.05)', padding: '1rem', borderRadius: '10px', border: '1px solid rgba(57,255,20,0.1)' }}>
                                                             {owner.photo_url ? (
-                                                                <img src={getOptimizedImageUrl(owner.photo_url, 150)} alt="Owner" style={{ width: 50, height: 50, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent-green)' }} />
+                                                                <img src={getOptimizedImageUrl(owner.photo_url, 150)} alt="Owner" style={{ width: 50, height: 50, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a', border: '2px solid var(--accent-green)' }} />
                                                             ) : (
                                                                 <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(135deg, rgba(57,255,20,0.2), rgba(0,0,0,0.4))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', color: 'var(--accent-green)', border: '2px solid var(--accent-green)' }}>
                                                                     {(owner.owner_name || 'OW').slice(0, 2).toUpperCase()}
@@ -1241,7 +1241,7 @@ const TeamDetailsPage = () => {
                                                     {icons.length === 0 ? <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No icon players assigned.</p> : icons.map(p => (
                                                         <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,215,0,0.05)', padding: '1rem', borderRadius: '10px', border: '1px solid rgba(255,215,0,0.1)' }}>
                                                             {p.players.photo_url ? (
-                                                                <img src={getOptimizedImageUrl(p.players.photo_url, 150)} alt="Player" style={{ width: 50, height: 50, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent-gold)' }} />
+                                                                <img src={getOptimizedImageUrl(p.players.photo_url, 150)} alt="Player" style={{ width: 50, height: 50, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a', border: '2px solid var(--accent-gold)' }} />
                                                             ) : (
                                                                 <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(0,0,0,0.4))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', color: 'var(--accent-gold)', border: '2px solid var(--accent-gold)' }}>
                                                                     {getPlayerInitials(p.players)}
@@ -1273,7 +1273,7 @@ const TeamDetailsPage = () => {
                                                     <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '0.8rem 1.2rem', borderRadius: '10px' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                             {p.players.photo_url ? (
-                                                                <img src={getOptimizedImageUrl(p.players.photo_url, 150)} alt="Player" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />
+                                                                <img src={getOptimizedImageUrl(p.players.photo_url, 150)} alt="Player" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a' }} />
                                                             ) : (
                                                                 <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 'bold', color: '#fff' }}>
                                                                     {getPlayerInitials(p.players)}

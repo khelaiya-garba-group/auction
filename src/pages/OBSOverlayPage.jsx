@@ -409,7 +409,7 @@ const OBSOverlayPage = () => {
                                     <img 
                                         src={playerPhoto} 
                                         alt={playerName}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#090d16' }}
                                         onError={(e) => { e.target.style.display = 'none'; }}
                                     />
                                 </div>

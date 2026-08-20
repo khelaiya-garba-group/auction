@@ -1028,7 +1028,7 @@ const AdminPlayersPage = () => {
                         </td>
                         <td style={{ padding: '1rem' }}>
                           {p.photo_url ? (
-                            <img src={getOptimizedImageUrl(p.photo_url, 100)} alt="Player" style={{ width: 50, height: 50, objectFit: 'cover', objectPosition: 'top center', borderRadius: '4px' }} />
+                            <img src={getOptimizedImageUrl(p.photo_url, 100)} alt="Player" style={{ width: 50, height: 50, objectFit: 'contain', backgroundColor: '#0f172a', borderRadius: '4px' }} />
                           ) : (
                             <div style={{ width: 50, height: 50, borderRadius: '4px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', color: '#fff' }}>
                               {getPlayerInitials(p)}

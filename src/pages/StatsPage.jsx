@@ -332,7 +332,7 @@ const StatsPage = () => {
                                                 src={imageUrl}
                                                 alt={name}
                                                 onError={(e) => { e.target.onerror = null; e.target.src = fallbackAvatar; }}
-                                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
+                                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#0f172a' }}
                                             />
                                             {/* Top Buys Badge Rank */}
                                             <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(2, 6, 23, 0.8)', border: '1px solid rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem', color: '#fff', fontWeight: 'bold' }}>
@@ -449,7 +449,7 @@ const StatsPage = () => {
                                                             src={imageUrl}
                                                             alt="Player"
                                                             onError={(e) => { e.target.onerror = null; e.target.src = fallbackAvatar; }}
-                                                            style={{ width: 45, height: 45, objectFit: 'cover', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)' }}
+                                                            style={{ width: 45, height: 45, objectFit: 'contain', backgroundColor: '#0f172a', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.1)' }}
                                                         />
                                                     </td>
                                                     <td style={{ padding: '1rem' }}>

@@ -139,7 +139,7 @@ const PlayerProfilePage = () => {
               <img
                 src={getOptimizedImageUrl(player.photo_url, 500)}
                 alt={player.first_name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
+                style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#0f172a' }}
               />
             ) : (
               <div style={{

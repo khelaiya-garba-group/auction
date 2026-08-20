@@ -18,7 +18,7 @@ const PlayerCard = ({ player, viewMode = 'grid' }) => {
           src={getOptimizedImageUrl(player.photo_url, 150) || fallbackAvatar}
           alt={player.first_name}
           onError={(e) => { e.target.onerror = null; e.target.src = fallbackAvatar; }}
-          style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center', border: '2px solid var(--accent-gold)', backgroundColor: '#0f172a' }}
+          style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'contain', border: '2px solid var(--accent-gold)', backgroundColor: '#0f172a' }}
         />
 
         <div style={{ flex: 1, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
@@ -103,7 +103,7 @@ const PlayerCard = ({ player, viewMode = 'grid' }) => {
           src={getOptimizedImageUrl(player.photo_url, 300) || fallbackAvatar}
           alt={`${player.first_name} ${player.last_name}`}
           onError={(e) => { e.target.onerror = null; e.target.src = fallbackAvatar; }}
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'contain', backgroundColor: '#0f172a' }}
         />
         {/* Gradient Overlay for text */}
         <div style={{ position: 'absolute', bottom: 0, left: 0, width: '100%', height: '50%', background: 'linear-gradient(to top, rgba(0,0,0,0.9), transparent)' }}></div>

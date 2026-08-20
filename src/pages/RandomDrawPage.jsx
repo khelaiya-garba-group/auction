@@ -716,7 +716,8 @@ const RandomDrawPage = () => {
                       style={{
                         width: 140,
                         height: 140,
-                        objectFit: 'cover',
+                        objectFit: 'contain',
+                        backgroundColor: '#0f172a',
                         borderRadius: '12px',
                         border: '3px solid var(--accent-gold)',
                         boxShadow: '0 0 15px rgba(255,215,0,0.3)'
