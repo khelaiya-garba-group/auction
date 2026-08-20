@@ -235,6 +235,10 @@ const RegistrationPage = () => {
         throw new Error("Branch selection is required.");
       }
 
+      if (!formData.gender) {
+        throw new Error("Gender selection is required.");
+      }
+
       if (!formData.photo) {
         throw new Error("Player Photo is required.");
       }
@@ -636,9 +640,9 @@ const RegistrationPage = () => {
                 <input type="date" name="dob" className="form-input" value={formData.dob} onChange={handleChange} />
               </div>
               <div className="form-group">
-                <label className="form-label">Gender</label>
-                <select name="gender" className="form-select" value={formData.gender} onChange={handleChange}>
-                  <option value="">Select</option>
+                <label className="form-label">Gender *</label>
+                <select required name="gender" className="form-select" value={formData.gender} onChange={handleChange}>
+                  <option value="">Select Gender</option>
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>

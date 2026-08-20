@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { getOptimizedImageUrl } from '../services/cloudinary';
 import PageHeader from '../components/PageHeader';
@@ -22,12 +22,17 @@ const StatsPage = () => {
     const [allAuctions, setAllAuctions] = useState([]);
 
     const [loading, setLoading] = useState(true);
+    const location = useLocation();
+    const navigate = useNavigate();
     const [activeAuction, setActiveAuction] = useState(null);
     const [teams, setTeams] = useState([]);
     const [players, setPlayers] = useState([]);
-    const [activeTab, setActiveTab] = useState('topBuys'); // 'topBuys' or 'allPlayers'
-    const [searchTerm, setSearchTerm] = useState('');
+    const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('stats_tab') || 'topBuys'); // 'topBuys' or 'allPlayers'
+    const [searchTerm, setSearchTerm] = useState(() => sessionStorage.getItem('stats_search') || '');
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => { sessionStorage.setItem('stats_tab', activeTab); }, [activeTab]);
+    useEffect(() => { sessionStorage.setItem('stats_search', searchTerm); }, [searchTerm]);
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -297,18 +302,23 @@ const StatsPage = () => {
                                     : fallbackAvatar;
 
                                 return (
-                                    <div
-                                        key={p ? p.id : `empty-${idx}`}
+                                    <Link
+                                        key={p?.id || idx}
+                                        to={p?.players?.id ? `/player/${p.players.id}` : p?.id ? `/player/${p.id}` : '#'}
+                                        state={{ from: location.pathname + location.search }}
                                         className="glass-panel"
                                         style={{
-                                            overflow: 'hidden',
                                             display: 'flex',
                                             flexDirection: 'column',
+                                            borderRadius: '16px',
+                                            overflow: 'hidden',
                                             border: '1px solid rgba(255,255,255,0.08)',
-                                            borderRadius: '12px',
-                                            background: 'linear-gradient(to bottom, rgba(15,23,42,0.4), rgba(2,6,23,0.8))',
-                                            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                                            boxShadow: p ? '0 10px 20px rgba(0,0,0,0.5)' : 'none',
+                                            background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(2, 6, 23, 0.95))',
+                                            boxShadow: '0 10px 20px rgba(0,0,0,0.5)',
+                                            transition: 'transform 0.3s ease, boxShadow 0.3s ease, border-color 0.3s ease',
+                                            cursor: p ? 'pointer' : 'default',
+                                            position: 'relative',
+                                            textDecoration: 'none',
                                             opacity: p ? 1 : 0.6
                                         }}
                                         onMouseEnter={(e) => {
@@ -382,7 +392,7 @@ const StatsPage = () => {
                                                 {p ? <IndianCurrencyDisplay amount={price} size="lg" color="var(--accent-green)" align="center" /> : '-'}
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 );
                             })}
                         </div>
@@ -430,11 +440,8 @@ const StatsPage = () => {
                                             return (
                                                 <tr
                                                     key={p.id}
-                                                    style={{
-                                                        borderBottom: '1px solid var(--glass-border)',
-                                                        background: isSold ? 'rgba(57, 255, 20, 0.02)' : 'rgba(0,0,0,0.1)',
-                                                        transition: 'background 0.2s'
-                                                    }}
+                                                    onClick={() => navigate(`/player/${p.players?.id || p.id}`, { state: { from: location.pathname + location.search } })}
+                                                    style={{ borderBottom: '1px solid var(--border-color)', background: isSold ? 'rgba(57, 255, 20, 0.02)' : 'rgba(0,0,0,0.1)', cursor: 'pointer', transition: 'background 0.2s' }}
                                                     onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                                                     onMouseLeave={(e) => e.currentTarget.style.background = isSold ? 'rgba(57, 255, 20, 0.02)' : 'rgba(0,0,0,0.1)'}
                                                 >

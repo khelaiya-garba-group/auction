@@ -30,7 +30,7 @@ const LiveAuctionPage = () => {
 
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('bidding'); // 'bidding' or 'sold'
+    const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('live_auction_tab') || 'bidding'); // 'bidding', 'sold', 'unsold'
     const [isMuted, setIsMuted] = useState(soundEngine.isMuted());
 
     const [activeAuction, setActiveAuction] = useState(null);
@@ -39,17 +39,32 @@ const LiveAuctionPage = () => {
     const [activePlayer, setActivePlayer] = useState(null);
 
     // Search and Filter States
-    const [searchTerm, setSearchTerm] = useState('');
-    const [roleFilter, setRoleFilter] = useState('ALL');
+    const [searchTerm, setSearchTerm] = useState(() => sessionStorage.getItem('live_auction_search') || '');
+    const [roleFilter, setRoleFilter] = useState(() => sessionStorage.getItem('live_auction_role') || 'ALL');
     const genderParam = searchParams.get('gender');
     const initialGender = (genderParam && (genderParam.toLowerCase() === 'female' || genderParam.toLowerCase() === 'male'))
         ? (genderParam.toLowerCase() === 'female' ? 'Female' : 'Male')
-        : 'Male';
+        : (sessionStorage.getItem('live_auction_gender_session') || 'Male');
     const [liveGenderSession, setLiveGenderSession] = useState(initialGender); // 'Male' or 'Female'
 
     // Direct Custom Bidding States
     const [customBid, setCustomBid] = useState('');
     const [customBidTeam, setCustomBidTeam] = useState('');
+
+    // Sold & Unsold Tab Search and Gender Filter States
+    const [soldSearchTerm, setSoldSearchTerm] = useState(() => sessionStorage.getItem('live_auction_sold_search') || '');
+    const [unsoldSearchTerm, setUnsoldSearchTerm] = useState(() => sessionStorage.getItem('live_auction_unsold_search') || '');
+    const [soldGenderFilter, setSoldGenderFilter] = useState(() => sessionStorage.getItem('live_auction_sold_gender') || 'ALL');
+    const [unsoldGenderFilter, setUnsoldGenderFilter] = useState(() => sessionStorage.getItem('live_auction_unsold_gender') || 'ALL');
+
+    useEffect(() => { sessionStorage.setItem('live_auction_search', searchTerm); }, [searchTerm]);
+    useEffect(() => { sessionStorage.setItem('live_auction_role', roleFilter); }, [roleFilter]);
+    useEffect(() => { sessionStorage.setItem('live_auction_gender_session', liveGenderSession); }, [liveGenderSession]);
+    useEffect(() => { sessionStorage.setItem('live_auction_sold_search', soldSearchTerm); }, [soldSearchTerm]);
+    useEffect(() => { sessionStorage.setItem('live_auction_unsold_search', unsoldSearchTerm); }, [unsoldSearchTerm]);
+    useEffect(() => { sessionStorage.setItem('live_auction_sold_gender', soldGenderFilter); }, [soldGenderFilter]);
+    useEffect(() => { sessionStorage.setItem('live_auction_unsold_gender', unsoldGenderFilter); }, [unsoldGenderFilter]);
+    useEffect(() => { sessionStorage.setItem('live_auction_tab', activeTab); }, [activeTab]);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -587,8 +602,51 @@ const LiveAuctionPage = () => {
         const matchesGender = !activeAuction?.is_separate_gender || (p.players?.gender || '').toLowerCase() === liveGenderSession.toLowerCase();
         return matchesStatus && matchesSearch && matchesRole && matchesGender;
     });
-    const soldPlayers = players.filter(p => p.auction_status === 'sold' && !p.is_icon && !p.is_captain);
-    const unsoldPlayers = players.filter(p => p.auction_status === 'unsold');
+    const soldPlayers = players.filter(p => {
+        if (p.auction_status !== 'sold' || p.is_icon || p.is_captain) return false;
+
+        // Gender filter: respect explicit filter or separate gender session
+        const pGender = (p.players?.gender || 'Male').toLowerCase();
+        let matchesGender = true;
+        if (soldGenderFilter !== 'ALL') {
+            matchesGender = pGender === soldGenderFilter.toLowerCase();
+        } else if (activeAuction?.is_separate_gender) {
+            matchesGender = pGender === liveGenderSession.toLowerCase();
+        }
+
+        // Search filter
+        const lowSearch = soldSearchTerm.toLowerCase().trim();
+        const team = teams.find(t => t.id === p.team_id);
+        const fullName = `${p.players?.first_name || ''} ${p.players?.last_name || ''}`.toLowerCase();
+        const numStr = p.player_number != null ? p.player_number.toString() : '';
+        const teamNameStr = (team?.team_name || '').toLowerCase();
+        const matchesSearch = !lowSearch || fullName.includes(lowSearch) || numStr.includes(lowSearch) || teamNameStr.includes(lowSearch);
+
+        return matchesGender && matchesSearch;
+    });
+
+    const unsoldPlayers = players.filter(p => {
+        if (p.auction_status !== 'unsold') return false;
+
+        // Gender filter
+        const pGender = (p.players?.gender || 'Male').toLowerCase();
+        let matchesGender = true;
+        if (unsoldGenderFilter !== 'ALL') {
+            matchesGender = pGender === unsoldGenderFilter.toLowerCase();
+        } else if (activeAuction?.is_separate_gender) {
+            matchesGender = pGender === liveGenderSession.toLowerCase();
+        }
+
+        // Search filter
+        const lowSearch = unsoldSearchTerm.toLowerCase().trim();
+        const fullName = `${p.players?.first_name || ''} ${p.players?.last_name || ''}`.toLowerCase();
+        const numStr = p.player_number != null ? p.player_number.toString() : '';
+        const roleStr = (p.players?.player_role || '').toLowerCase();
+        const stateStr = (p.players?.state || '').toLowerCase();
+        const matchesSearch = !lowSearch || fullName.includes(lowSearch) || numStr.includes(lowSearch) || roleStr.includes(lowSearch) || stateStr.includes(lowSearch);
+
+        return matchesGender && matchesSearch;
+    });
 
     // Display teams filtered by session if separate gender auction mode is enabled
     const displayTeams = teams.filter(t => {
@@ -779,8 +837,56 @@ const LiveAuctionPage = () => {
                                         </div>
                                     </div>
 
+                                    {/* Top Action Controls Bar */}
+                                    <div style={{
+                                        background: 'rgba(15, 23, 42, 0.95)',
+                                        border: '1px solid rgba(255, 215, 0, 0.3)',
+                                        borderRadius: '12px',
+                                        padding: '1rem 1.5rem',
+                                        margin: '1.5rem 0',
+                                        display: 'flex',
+                                        gap: '1rem',
+                                        justify: 'center',
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap',
+                                        boxShadow: '0 8px 25px rgba(0,0,0,0.5)'
+                                    }}>
+                                        <button
+                                            onClick={undoLastBid}
+                                            disabled={actionLoading || !activePlayer.current_bid_team_id}
+                                            className="btn btn-outline"
+                                            style={{ padding: '0.7rem 1.5rem', color: '#f59e0b', borderColor: '#f59e0b', fontSize: '1rem', fontWeight: 'bold' }}
+                                        >
+                                            ↩️ UNDO BID
+                                        </button>
+                                        <button
+                                            onClick={finalizeSold}
+                                            disabled={actionLoading || !activePlayer.current_bid_team_id}
+                                            className="btn btn-primary"
+                                            style={{ padding: '0.7rem 2.2rem', background: '#10b981', borderColor: '#10b981', fontSize: '1.05rem', fontWeight: 'bold' }}
+                                        >
+                                            🔨 SOLD
+                                        </button>
+                                        <button
+                                            onClick={markUnsold}
+                                            disabled={actionLoading}
+                                            className="btn"
+                                            style={{ padding: '0.7rem 1.6rem', background: '#ef4444', color: '#fff', fontSize: '1rem', fontWeight: 'bold' }}
+                                        >
+                                            ❌ UNSOLD
+                                        </button>
+                                        <button
+                                            onClick={cancelActiveAuction}
+                                            disabled={actionLoading}
+                                            className="btn btn-outline"
+                                            style={{ padding: '0.7rem 1.4rem', color: '#94a3b8', borderColor: '#94a3b8', fontSize: '0.95rem' }}
+                                        >
+                                            ⏹️ CANCEL
+                                        </button>
+                                    </div>
+
                                     {/* Bidding Controls */}
-                                    <div style={{ marginTop: '2rem', borderTop: '1px solid var(--border-color)', paddingTop: '2rem' }}>
+                                    <div style={{ marginTop: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
                                         {/* Custom Direct Bid Form */}
                                         <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px dashed var(--border-color)', borderRadius: '10px', padding: '1.5rem', marginBottom: '2rem', textAlign: 'left' }}>
                                             <h4 style={{ color: 'var(--accent-gold)', marginTop: 0, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -946,8 +1052,54 @@ const LiveAuctionPage = () => {
                             )}
                         </div>
 
-                        {/* Sidebar: Pending Players */}
-                        <div className="glass-panel" style={{ padding: '1.5rem', maxHeight: '80vh', overflowY: 'auto' }}>
+                        {/* Sidebar Column */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                            {/* Top Right Active Player Bidding Controls Box */}
+                            {activePlayer && (
+                                <div className="glass-panel" style={{ padding: '1.2rem', border: '2px solid var(--accent-gold)', borderRadius: '12px', background: 'rgba(15, 23, 42, 0.95)', boxShadow: '0 8px 25px rgba(255,215,0,0.2)' }}>
+                                    <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--accent-gold)', marginBottom: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                        <span>⚡ LIVE BID ACTIONS</span>
+                                        <span style={{ fontSize: '0.75rem', color: '#10b981' }}>#{activePlayer.player_number || ''}</span>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+                                        <button
+                                            onClick={undoLastBid}
+                                            disabled={actionLoading || !activePlayer.current_bid_team_id}
+                                            className="btn btn-outline"
+                                            style={{ padding: '0.65rem 0.6rem', color: '#f59e0b', borderColor: '#f59e0b', fontSize: '0.82rem', fontWeight: 'bold', width: '100%' }}
+                                        >
+                                            ↩️ UNDO BID
+                                        </button>
+                                        <button
+                                            onClick={finalizeSold}
+                                            disabled={actionLoading || !activePlayer.current_bid_team_id}
+                                            className="btn btn-primary"
+                                            style={{ padding: '0.65rem 0.6rem', background: '#10b981', borderColor: '#10b981', fontSize: '0.85rem', fontWeight: 'bold', width: '100%' }}
+                                        >
+                                            🔨 SOLD
+                                        </button>
+                                        <button
+                                            onClick={markUnsold}
+                                            disabled={actionLoading}
+                                            className="btn"
+                                            style={{ padding: '0.65rem 0.6rem', background: '#ef4444', color: '#fff', fontSize: '0.85rem', fontWeight: 'bold', width: '100%' }}
+                                        >
+                                            ❌ UNSOLD
+                                        </button>
+                                        <button
+                                            onClick={cancelActiveAuction}
+                                            disabled={actionLoading}
+                                            className="btn btn-outline"
+                                            style={{ padding: '0.65rem 0.6rem', color: '#94a3b8', borderColor: '#94a3b8', fontSize: '0.82rem', width: '100%' }}
+                                        >
+                                            ⏹️ CANCEL
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Sidebar: Pending Players */}
+                            <div className="glass-panel" style={{ padding: '1.5rem', maxHeight: '75vh', overflowY: 'auto' }}>
                             <h3 style={{ color: 'var(--accent-gold)', fontSize: '1.1rem', marginBottom: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>PENDING PLAYERS ({pendingPlayers.length})</h3>
                             
                             {/* Search and Filters */}
@@ -977,20 +1129,22 @@ const LiveAuctionPage = () => {
                                 ) : (
                                     pendingPlayers.map(p => (
                                         <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.03)', padding: '0.8rem', borderRadius: '8px' }}>
-                                            {p.players.photo_url ? (
-                                                <img src={getOptimizedImageUrl(p.players.photo_url, 100)} alt="P" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a' }} />
-                                            ) : (
-                                                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 'bold', color: '#fff' }}>
-                                                    {getPlayerInitials(p.players)}
+                                            <Link to={`/player/${p.players?.id || p.player_id}`} state={{ from: location.pathname + location.search }} style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1, textDecoration: 'none', color: 'inherit' }}>
+                                                {p.players.photo_url ? (
+                                                    <img src={getOptimizedImageUrl(p.players.photo_url, 100)} alt="P" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a' }} />
+                                                ) : (
+                                                    <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 'bold', color: '#fff' }}>
+                                                        {getPlayerInitials(p.players)}
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                                        {p.player_number && <span style={{ color: 'var(--accent-gold)', marginRight: '0.5rem' }}>#{p.player_number}</span>}
+                                                        {p.players.first_name} {p.players.last_name}
+                                                    </div>
+                                                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{p.players.player_role}</div>
                                                 </div>
-                                            )}
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
-                                                    {p.player_number && <span style={{ color: 'var(--accent-gold)', marginRight: '0.5rem' }}>#{p.player_number}</span>}
-                                                    {p.players.first_name} {p.players.last_name}
-                                                </div>
-                                                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{p.players.player_role}</div>
-                                            </div>
+                                            </Link>
                                             <button
                                                 onClick={() => startAuctionForPlayer(p.id)}
                                                 disabled={actionLoading || activePlayer}
@@ -1005,12 +1159,65 @@ const LiveAuctionPage = () => {
                             </div>
                         </div>
                     </div>
+                    </div>
                 ) : activeTab === 'sold' ? (
                     /* Tab 2: Sold Players List */
                     <div className="glass-panel" style={{ padding: '2rem' }}>
-                        <h3 style={{ color: 'var(--accent-gold)', marginBottom: '1.5rem' }}>SOLD PLAYERS REGISTRY</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div>
+                                <h3 style={{ color: 'var(--accent-gold)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                    <span>SOLD PLAYERS REGISTRY</span>
+                                    {activeAuction?.is_separate_gender && (
+                                        <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem', borderRadius: '20px', background: liveGenderSession === 'Female' ? 'rgba(236,72,153,0.25)' : 'rgba(59,130,246,0.25)', color: liveGenderSession === 'Female' ? '#f472b6' : '#60a5fa', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 'bold' }}>
+                                            {liveGenderSession.toUpperCase()} SESSION
+                                        </span>
+                                    )}
+                                </h3>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                                    Showing {soldPlayers.length} sold players
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                {activeAuction?.is_separate_gender && (
+                                    <select
+                                        value={soldGenderFilter}
+                                        onChange={(e) => setSoldGenderFilter(e.target.value)}
+                                        className="input"
+                                        style={{ padding: '0.5rem 0.8rem', backgroundColor: 'var(--bg-dark)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '0.85rem', outline: 'none' }}
+                                        title="Filter Sold Players by Gender"
+                                    >
+                                        <option value="ALL">🚻 Session: {liveGenderSession} (Default)</option>
+                                        <option value="Male">♂ Male Only</option>
+                                        <option value="Female">♀ Female Only</option>
+                                    </select>
+                                )}
+
+                                <div style={{ position: 'relative', width: '260px' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="🔍 Search sold player or team..."
+                                        value={soldSearchTerm}
+                                        onChange={(e) => setSoldSearchTerm(e.target.value)}
+                                        className="input"
+                                        style={{ width: '100%', padding: '0.5rem 2.2rem 0.5rem 0.8rem', fontSize: '0.85rem' }}
+                                    />
+                                    {soldSearchTerm && (
+                                        <button
+                                            onClick={() => setSoldSearchTerm('')}
+                                            style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.9rem' }}
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         {soldPlayers.length === 0 ? (
-                            <p className="text-muted text-center" style={{ padding: '3rem' }}>No players sold yet.</p>
+                            <p className="text-muted text-center" style={{ padding: '3rem' }}>
+                                {soldSearchTerm ? `No sold players matching "${soldSearchTerm}".` : 'No sold players found for this session.'}
+                            </p>
                         ) : (
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -1030,15 +1237,17 @@ const LiveAuctionPage = () => {
                                             return (
                                                 <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.02)' }}>
                                                     <td style={{ padding: '1rem', fontWeight: 'bold', color: 'var(--accent-gold)' }}>#{p.player_number || '-'}</td>
-                                                    <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                                        {p.players.photo_url ? (
-                                                            <img src={getOptimizedImageUrl(p.players.photo_url, 100)} alt="P" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a' }} />
-                                                        ) : (
-                                                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 'bold', color: '#fff' }}>
-                                                                {getPlayerInitials(p.players)}
-                                                            </div>
-                                                        )}
-                                                        <div>{p.players.first_name} {p.players.last_name}</div>
+                                                    <td style={{ padding: '1rem' }}>
+                                                        <Link to={`/player/${p.players?.id || p.player_id}`} state={{ from: location.pathname + location.search }} style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'inherit' }}>
+                                                            {p.players.photo_url ? (
+                                                                <img src={getOptimizedImageUrl(p.players.photo_url, 100)} alt="P" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a' }} />
+                                                            ) : (
+                                                                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 'bold', color: '#fff' }}>
+                                                                    {getPlayerInitials(p.players)}
+                                                                </div>
+                                                            )}
+                                                            <div>{p.players.first_name} {p.players.last_name}</div>
+                                                        </Link>
                                                     </td>
                                                     <td style={{ padding: '1rem' }}>{p.players.player_role}</td>
                                                     <td style={{ padding: '1rem' }}>
@@ -1077,21 +1286,71 @@ const LiveAuctionPage = () => {
                 ) : (
                     /* Tab 3: Unsold Players List */
                     <div className="glass-panel" style={{ padding: '2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h3 style={{ color: 'var(--accent-gold)', margin: 0 }}>UNSOLD PLAYERS LIST</h3>
-                            {unsoldPlayers.length > 0 && (
-                                <button 
-                                    onClick={restartAllUnsold}
-                                    disabled={actionLoading}
-                                    className="btn"
-                                    style={{ background: '#3b82f6', color: '#fff', padding: '0.5rem 1rem', fontSize: '0.8rem' }}
-                                >
-                                    🔄 RESTART ALL ({unsoldPlayers.length})
-                                </button>
-                            )}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div>
+                                <h3 style={{ color: 'var(--accent-gold)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                    <span>UNSOLD PLAYERS LIST</span>
+                                    {activeAuction?.is_separate_gender && (
+                                        <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem', borderRadius: '20px', background: liveGenderSession === 'Female' ? 'rgba(236,72,153,0.25)' : 'rgba(59,130,246,0.25)', color: liveGenderSession === 'Female' ? '#f472b6' : '#60a5fa', border: '1px solid rgba(255,255,255,0.2)', fontWeight: 'bold' }}>
+                                            {liveGenderSession.toUpperCase()} SESSION
+                                        </span>
+                                    )}
+                                </h3>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                                    Showing {unsoldPlayers.length} unsold players
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                {activeAuction?.is_separate_gender && (
+                                    <select
+                                        value={unsoldGenderFilter}
+                                        onChange={(e) => setUnsoldGenderFilter(e.target.value)}
+                                        className="input"
+                                        style={{ padding: '0.5rem 0.8rem', backgroundColor: 'var(--bg-dark)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '0.85rem', outline: 'none' }}
+                                        title="Filter Unsold Players by Gender"
+                                    >
+                                        <option value="ALL">🚻 Session: {liveGenderSession} (Default)</option>
+                                        <option value="Male">♂ Male Only</option>
+                                        <option value="Female">♀ Female Only</option>
+                                    </select>
+                                )}
+
+                                <div style={{ position: 'relative', width: '240px' }}>
+                                    <input
+                                        type="text"
+                                        placeholder="🔍 Search unsold player..."
+                                        value={unsoldSearchTerm}
+                                        onChange={(e) => setUnsoldSearchTerm(e.target.value)}
+                                        className="input"
+                                        style={{ width: '100%', padding: '0.5rem 2.2rem 0.5rem 0.8rem', fontSize: '0.85rem' }}
+                                    />
+                                    {unsoldSearchTerm && (
+                                        <button
+                                            onClick={() => setUnsoldSearchTerm('')}
+                                            style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.9rem' }}
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+
+                                {unsoldPlayers.length > 0 && (
+                                    <button 
+                                        onClick={restartAllUnsold}
+                                        disabled={actionLoading}
+                                        className="btn"
+                                        style={{ background: '#3b82f6', color: '#fff', padding: '0.5rem 1rem', fontSize: '0.8rem', fontWeight: 'bold' }}
+                                    >
+                                        🔄 RESTART ALL ({unsoldPlayers.length})
+                                    </button>
+                                )}
+                            </div>
                         </div>
                         {unsoldPlayers.length === 0 ? (
-                            <p className="text-muted text-center" style={{ padding: '3rem' }}>No unsold players available.</p>
+                            <p className="text-muted text-center" style={{ padding: '3rem' }}>
+                                {unsoldSearchTerm ? `No unsold players matching "${unsoldSearchTerm}".` : 'No unsold players available for this session.'}
+                            </p>
                         ) : (
                             <div style={{ overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>

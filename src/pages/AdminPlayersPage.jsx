@@ -3,7 +3,7 @@ import { supabase } from '../services/supabase';
 import { uploadToCloudinary, deleteFromCloudinary, getOptimizedImageUrl } from '../services/cloudinary';
 import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { normalizeMobile, formatMobile } from '../utils/phoneUtils';
 import { tshirtSizes, branches } from '../data/data';
 import { generatePlayersListPDF } from '../services/pdfGenerator';
@@ -22,13 +22,34 @@ const AdminPlayersPage = () => {
   const [playersList, setPlayersList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('pending');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [genderFilter, setGenderFilter] = useState('all');
-  const [sourceFilter, setSourceFilter] = useState('all');
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('admin_players_tab') || 'pending');
+  const [currentPage, setCurrentPage] = useState(() => parseInt(sessionStorage.getItem('admin_players_page') || '1', 10));
+  const [searchTerm, setSearchTerm] = useState(() => sessionStorage.getItem('admin_players_search') || '');
+  const [genderFilter, setGenderFilter] = useState(() => sessionStorage.getItem('admin_players_gender') || 'all');
+  const [sourceFilter, setSourceFilter] = useState(() => sessionStorage.getItem('admin_players_source') || 'all');
   const itemsPerPage = 20;
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    sessionStorage.setItem('admin_players_tab', activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
+    sessionStorage.setItem('admin_players_page', currentPage.toString());
+  }, [currentPage]);
+
+  useEffect(() => {
+    sessionStorage.setItem('admin_players_search', searchTerm);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    sessionStorage.setItem('admin_players_gender', genderFilter);
+  }, [genderFilter]);
+
+  useEffect(() => {
+    sessionStorage.setItem('admin_players_source', sourceFilter);
+  }, [sourceFilter]);
 
   // Form State
   const [showForm, setShowForm] = useState(false);
@@ -364,6 +385,7 @@ const AdminPlayersPage = () => {
 
     try {
       if (!activeAuction) throw new Error("No active auction configuration found.");
+      if (!formData.gender) throw new Error("Gender selection is required.");
 
       // Check Mobile uniqueness using normalizeMobile
       const inputNorm = normalizeMobile(formData.mobile);
@@ -775,9 +797,9 @@ const AdminPlayersPage = () => {
                   <input type="date" name="dob" value={formData.dob} onChange={handleFormChange} className="form-input" />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Gender</label>
-                  <select name="gender" value={formData.gender} onChange={handleFormChange} className="form-select">
-                    <option value="">Select</option>
+                  <label className="form-label">Gender *</label>
+                  <select required name="gender" value={formData.gender} onChange={handleFormChange} className="form-select">
+                    <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                   </select>
@@ -1018,7 +1040,7 @@ const AdminPlayersPage = () => {
                       return (
                       <tr
                         key={p.auction_player_id}
-                        onClick={() => navigate(`/player/${p.id}`, { state: { from: '/admin-players' } })}
+                        onClick={() => navigate(`/player/${p.id}`, { state: { from: location.pathname + location.search } })}
                         style={{ borderBottom: '1px solid var(--glass-border)', background: 'rgba(0,0,0,0.2)', cursor: 'pointer', transition: 'background 0.2s' }}
                         onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.2)'}

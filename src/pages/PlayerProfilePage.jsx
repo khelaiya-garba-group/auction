@@ -78,7 +78,19 @@ const PlayerProfilePage = () => {
       <div className="spotlight"></div>
 
       <div style={{ position: 'absolute', top: isMobile ? '1rem' : '2rem', left: isMobile ? '1rem' : '2rem', zIndex: 10, display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
-        <button onClick={() => navigate(fromPath)} className="btn btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <button 
+          onClick={() => {
+            if (location.state?.from) {
+              navigate(location.state.from);
+            } else if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate('/players');
+            }
+          }} 
+          className="btn btn-outline" 
+          style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
           <span>←</span> Back
         </button>
         <button 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
 import PageHeader from '../components/PageHeader';
 import { Loader } from '../components/Loader';
-import { Link, Navigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams, useLocation } from 'react-router-dom';
 import { getOptimizedImageUrl } from '../services/cloudinary';
 import { generateAllTeamsPDF, generateSingleTeamPDF, generateVendorTshirtPDF, generateSingleTeamTshirtPDF } from '../services/pdfGenerator';
 import { Download, LayoutGrid, List, User } from 'lucide-react';
@@ -42,9 +42,13 @@ const TeamDetailsPage = () => {
     const [squads, setSquads] = useState({});
     const [teamOwnersMap, setTeamOwnersMap] = useState({});
     const [allPlayers, setAllPlayers] = useState([]);
-    const [selectedTeamId, setSelectedTeamId] = useState(null);
+    const location = useLocation();
+    const [selectedTeamId, setSelectedTeamId] = useState(() => sessionStorage.getItem('team_details_selected_id') || null);
     const [expandedTeams, setExpandedTeams] = useState({});
-    const [viewMode, setViewMode] = useState('grid'); // 'grid', 'list', or 'single'
+    const [viewMode, setViewMode] = useState(() => sessionStorage.getItem('team_details_view_mode') || 'grid'); // 'grid', 'list', or 'single'
+
+    useEffect(() => { if (selectedTeamId) sessionStorage.setItem('team_details_selected_id', selectedTeamId); }, [selectedTeamId]);
+    useEffect(() => { sessionStorage.setItem('team_details_view_mode', viewMode); }, [viewMode]);
 
     const handleDownloadPdf = async () => {
         setIsGeneratingPdf(true);
@@ -1239,7 +1243,7 @@ const TeamDetailsPage = () => {
                                                 </h4>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                                     {icons.length === 0 ? <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No icon players assigned.</p> : icons.map(p => (
-                                                        <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,215,0,0.05)', padding: '1rem', borderRadius: '10px', border: '1px solid rgba(255,215,0,0.1)' }}>
+                                                        <Link key={p.id} to={`/player/${p.players?.id || p.player_id}`} state={{ from: location.pathname + location.search }} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,215,0,0.05)', padding: '1rem', borderRadius: '10px', border: '1px solid rgba(255,215,0,0.1)', textDecoration: 'none', color: 'inherit' }}>
                                                             {p.players.photo_url ? (
                                                                 <img src={getOptimizedImageUrl(p.players.photo_url, 150)} alt="Player" style={{ width: 50, height: 50, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a', border: '2px solid var(--accent-gold)' }} />
                                                             ) : (
@@ -1257,7 +1261,7 @@ const TeamDetailsPage = () => {
                                                                     {p.players.player_role.toUpperCase()} {p.players.mobile ? `| 📞 ${p.players.mobile}` : ''}
                                                                 </div>
                                                             </div>
-                                                        </div>
+                                                        </Link>
                                                     ))}
                                                 </div>
                                             </div>
@@ -1270,7 +1274,7 @@ const TeamDetailsPage = () => {
                                             </h4>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                                                 {auctioned.length === 0 ? <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>No auction players bought yet.</p> : auctioned.map(p => (
-                                                    <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '0.8rem 1.2rem', borderRadius: '10px' }}>
+                                                    <Link key={p.id} to={`/player/${p.players?.id || p.player_id}`} state={{ from: location.pathname + location.search }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '0.8rem 1.2rem', borderRadius: '10px', textDecoration: 'none', color: 'inherit' }}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                                             {p.players.photo_url ? (
                                                                 <img src={getOptimizedImageUrl(p.players.photo_url, 150)} alt="Player" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'contain', backgroundColor: '#0f172a' }} />
@@ -1286,14 +1290,14 @@ const TeamDetailsPage = () => {
                                                                     {selectedTeam.vice_captain_id == p.id && <span style={{ background: 'var(--accent-green)', color: '#000', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>⭐ VICE-CAPTAIN</span>}
                                                                 </div>
                                                                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                                                    {p.players.player_role} {p.players.mobile ? `| 📞 ${p.players.mobile}` : ''}
+                                                                    {p.players.player_role?.toUpperCase() || 'PLAYER'} {p.players.mobile ? `| 📞 ${p.players.mobile}` : ''}
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <div style={{ textAlign: 'right' }}>
-                                                            <div style={{ color: 'var(--accent-gold)', fontWeight: 'bold' }}>₹{p.sold_price?.toLocaleString()}</div>
+                                                            <div style={{ fontWeight: 'bold', color: 'var(--accent-green)', fontSize: '0.9rem' }}>₹{p.sold_price?.toLocaleString()}</div>
                                                         </div>
-                                                    </div>
+                                                    </Link>
                                                 ))}
                                             </div>
                                         </div>
