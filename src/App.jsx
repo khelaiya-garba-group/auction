@@ -33,6 +33,7 @@ const RandomDrawPage = React.lazy(() => import('./pages/RandomDrawPage'));
 const PricingPage = React.lazy(() => import('./pages/PricingPage'));
 const StreamSetupPage = React.lazy(() => import('./pages/StreamSetupPage'));
 const OBSOverlayPage = React.lazy(() => import('./pages/OBSOverlayPage'));
+const YouTubeStreamProjectorPage = React.lazy(() => import('./pages/YouTubeStreamProjectorPage'));
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/register" element={<RegistrationPage />} />
           <Route path="/live-auction-projector" element={<LiveAuctionProjectorPage />} />
+          <Route path="/youtube-live-projector" element={<YouTubeStreamProjectorPage />} />
           <Route path="/obs-overlay" element={<OBSOverlayPage />} />
           <Route path="/stream-setup" element={<StreamSetupPage />} />
           <Route path="/all-players" element={<PublicPlayersPage />} />

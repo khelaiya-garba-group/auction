@@ -28,6 +28,7 @@ const StreamSetupPage = () => {
 
     const overlayUrl = getFullRouteUrl('/obs-overlay', selectedAuctionCode);
     const projectorUrl = getFullRouteUrl('/live-auction-projector', selectedAuctionCode);
+    const ytProjectorUrl = getFullRouteUrl('/youtube-live-projector', selectedAuctionCode);
 
     useEffect(() => {
         const fetchAuctions = async () => {
@@ -377,6 +378,69 @@ const StreamSetupPage = () => {
                                     <Play size={16} color="#39ff14" /> PREVIEW OVERLAY
                                 </button>
                             )}
+                        </div>
+                    </div>
+
+                    {/* PRIVATE YOUTUBE LIVE PROJECTOR VIEW CARD */}
+                    <div style={{
+                        background: 'linear-gradient(135deg, rgba(239,68,68,0.1), rgba(15,23,42,0.9))',
+                        border: '2px solid rgba(239,68,68,0.4)',
+                        borderRadius: '16px',
+                        padding: '1.25rem 1.5rem',
+                        marginTop: '1rem'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#ef4444', fontWeight: 'bold', fontSize: '0.85rem', marginBottom: '0.3rem' }}>
+                                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }} />
+                                    PRIVATE YOUTUBE BROADCAST SCREEN VIEW (ONLY FOR YOU)
+                                </div>
+                                <h4 style={{ color: '#fff', margin: '0 0 0.3rem', fontSize: '1.05rem' }}>
+                                    🔴 All Teams Live Budget & Purse Projector View
+                                </h4>
+                                <p style={{ color: '#94a3b8', fontSize: '0.82rem', margin: 0 }}>
+                                    Features Active Bidding Stage, Live Purse/Budget Monitor for ALL Teams, Icon Player Badges &amp; Sponsors Ticker. (Not in public navbar).
+                                </p>
+                            </div>
+                            <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
+                                <button
+                                    onClick={() => handleCopy(ytProjectorUrl)}
+                                    style={{
+                                        background: 'rgba(239,68,68,0.15)',
+                                        color: '#ef4444',
+                                        border: '1px solid #ef4444',
+                                        padding: '0.55rem 1.1rem',
+                                        borderRadius: '8px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.4rem',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    <Copy size={15} /> Copy Private URL
+                                </button>
+                                <a
+                                    href={ytProjectorUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        background: '#ef4444',
+                                        color: '#fff',
+                                        padding: '0.55rem 1.2rem',
+                                        borderRadius: '8px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: 'bold',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.4rem',
+                                        textDecoration: 'none'
+                                    }}
+                                >
+                                    <Play size={15} /> Open Stream View
+                                </a>
+                            </div>
                         </div>
                     </div>
 
